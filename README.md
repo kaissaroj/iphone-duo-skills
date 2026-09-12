@@ -15,6 +15,9 @@ Once installed, the agent applies Apple's iPhone Duo guidelines automatically:
 
 That's it. One skill, one rules file.
 
+<p align="center"><img src="docs/social/duo.gif" width="720" alt="iPhone Duo folding: a document's alert slides off the hinge, a video app closes into laptop pose with controls on the bottom half, then six device poses of the same Mail app."></p>
+<p align="center"><sub>Footage from Apple's <a href="https://developer.apple.com/videos/play/tech-talks/111466">Design for iPhone Duo</a> tech talk.</sub></p>
+
 <p align="center"><img src="docs/example-review.png" width="640" alt="A Now Playing screen on the iPhone Duo inner display, partially folded. Numbered boxes mark the album art and Play button sitting on the hinge line, a text-only Edit item in the vertical bar strip, and a hand-built horizontal toolbar that never moved to the side."></p>
 <p align="center"><sub>A review of a Now Playing screen: album art and Play button on the hinge (1–3), a hand-built toolbar that stays horizontal (4), a text-only item in the vertical strip (5), content centered on the full width instead of the safe area (6), a second overflow menu (7).</sub></p>
 
