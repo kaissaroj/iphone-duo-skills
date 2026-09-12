@@ -14,6 +14,24 @@ Apply these while writing code, or review files against them. Output terse `file
 
 ![Six poses](assets/poses.png)
 
+## If you do only one thing: make the app resize
+
+iPhone Duo doesn't need a new kind of layout. It needs the same resizable layout that already breaks on iPad Split View, Stage Manager and iPhone Mirroring. Get these right and most of the Duo rules below fall out for free.
+
+| Rule | Swift | React Native |
+|---|---|---|
+| Decide layout from available width, never from device model | `horizontalSizeClass` | `useWindowDimensions().width` |
+| Never from orientation | no `interfaceOrientation` / `UIDevice.current.orientation` | no `expo-screen-orientation` state; no `app.json` orientation assumptions |
+| Never from idiom | no `userInterfaceIdiom == .pad` | no `Platform.isPad` |
+| No cached screen size | no `UIScreen.main.bounds` | no `Dimensions.get('window')` at module scope |
+| No fixed widths or breakpoints tied to a device | no `.frame(width: 390)` | no `width: 390`, no `SCREEN_W` constants |
+| Read each safe-area side separately | `bounds.inset(by: safeAreaInsets)` | `insets.left`, `insets.right` (not `paddingHorizontal: insets.left`) |
+| Foreground inside the safe area, background may extend past it | SwiftUI default / `.ignoresSafeArea()` for art | `SafeAreaView` + `edges` / full-bleed image behind it |
+| Let system containers do the work | `NavigationSplitView`, `TabView`, sheets, alerts | `native-stack`, native tabs, `Modal pageSheet`, `Alert` |
+| Test at half width and in landscape before shipping | Split View, iPhone Mirroring | same |
+
+Everything below is what Duo adds on top.
+
 ## Rules
 
 ### Layout foundations
