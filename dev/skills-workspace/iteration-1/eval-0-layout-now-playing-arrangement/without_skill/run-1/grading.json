@@ -1,0 +1,44 @@
+{
+  "expectations": [
+    {
+      "text": "uses ArrangementView with primary/secondary closure",
+      "passed": false,
+      "evidence": "not found"
+    },
+    {
+      "text": "sets .arrangementViewStyle(.split\u2026)",
+      "passed": false,
+      "evidence": "not found"
+    },
+    {
+      "text": "arrangement is inside NavigationStack (not the reverse)",
+      "passed": false,
+      "evidence": "not found"
+    },
+    {
+      "text": "no navigation container inside ArrangementView",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "no HStack used for the two panes",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "does not use UIScreen.main or orientation checks",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "no invented / unverified API names",
+      "passed": true,
+      "evidence": "none found"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "total": 7,
+    "pass_rate": 0.5714285714285714
+  }
+}

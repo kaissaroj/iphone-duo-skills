@@ -1,0 +1,6 @@
+.DS_Store
+.venv/
+venv/
+logs_llm/
+vectors.db*
+skills-workspace/**/run-*/outputs/**/*.tmp

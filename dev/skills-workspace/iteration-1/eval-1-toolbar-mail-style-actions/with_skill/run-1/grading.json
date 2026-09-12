@@ -1,0 +1,54 @@
+{
+  "expectations": [
+    {
+      "text": "no custom UIToolbar instantiated",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "items configured via navigationItem groups or pinnedTrailingGroup",
+      "passed": true,
+      "evidence": "navigationItem.pinnedTrailingGroup"
+    },
+    {
+      "text": "Select/Done item uses axisBehavior = .horizontalOnly",
+      "passed": true,
+      "evidence": "axisBehavior = .horizontalOnly"
+    },
+    {
+      "text": "Inbox count uses badge = .count(\u2026)",
+      "passed": true,
+      "evidence": ".badge = inboxUnreadCount > 0 ? .count("
+    },
+    {
+      "text": "More menu merged into additionalOverflowItems",
+      "passed": true,
+      "evidence": "additionalOverflowItems ="
+    },
+    {
+      "text": "Compose has visibilityPriority = .high",
+      "passed": true,
+      "evidence": "visibilityPriority = .high"
+    },
+    {
+      "text": "every UIBarButtonItem has both title and image",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "does not put ellipsis on a non-overflow menu",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "no invented / unverified API names",
+      "passed": true,
+      "evidence": "none found"
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "total": 9,
+    "pass_rate": 1.0
+  }
+}

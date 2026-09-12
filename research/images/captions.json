@@ -1,0 +1,21 @@
+{
+  "calculator-full-screen": "Screenshots of Calculator on iPhone 16 in portrait (left) and the outer display of iPhone Duo (right). The layout for iPhone 16 places buttons in four columns of five items each, while the layout for iPhone Duo places buttons in five columns of four items each.",
+  "compact-layout-tab-bar": "A diagram of the outer display of iPhone Duo in landscape, with a callout indicating the full tab bar and a callout indicating toolbar items collapsed into the overflow menu.",
+  "compact-layout-toolbar": "A diagram of the outer display of iPhone Duo in landscape, with a callout indicating the full toolbar and a callout indicating the tab bar collapsed into a single control.",
+  "device-layout-inner": "A diagram of the inner display of iPhone Duo, showing the locations of the hinge and the inner front-facing camera.",
+  "device-layout-outer": "A diagram of the outer display of iPhone Duo, showing the locations of the hinge and the outer front-facing camera.",
+  "hero-inside": "A screenshot of the Home Screen on the inner display of iPhone Duo.",
+  "hero-outside": "A screenshot of the Home Screen on the outer display of iPhone Duo.",
+  "mail-compact": "A screenshot of Mail on the outer display of iPhone Duo, showing the contents of an email.",
+  "mail-full": "A screenshot of Mail on the inner display of iPhone Duo, showing a list of emails on the leading side and the contents of an email on the trailing side.",
+  "multitasking": "A diagram of two apps open in Split View multitasking on the inner display of iPhone Duo. The left and right edges of the display each have callouts indicating the area for controls on the vertical axis, and callouts indicating their corresponding apps.",
+  "notes-sidebar-folded": "A screenshot of the Notes app on the inner display of iPhone Duo, representing the display when partially folded. The leading pane shows a list of notes and is the same width as the trailing pane, which shows the contents of a note.",
+  "notes-sidebar-open": "A screenshot of the Notes app on the inner display of iPhone Duo, representing the display when fully open. The leading pane shows a list of notes and is narrower than the trailing pane, which shows the contents of a note.",
+  "pane-controls": "A screenshot of Mail on the inner display of iPhone Duo, with tint colors overlaid to indicate the leading and trailing panes. Callouts indicate the location of controls for the leading pane, placed directly at the top of the pane, and controls for the trailing pane, placed vertically on the trailing edge.",
+  "poses": "An illustration of six device poses.",
+  "safe-area-inner-camera": "A diagram of the inner display of iPhone Duo, showing the locations of the folding region and the inner camera region.",
+  "safe-area-outer-camera": "A diagram of the outer display of iPhone Duo, showing the location of the outer camera region.",
+  "tab-bar-toolbar-layout": "A diagram of the outer display on iPhone Duo. Vertical elements on the trailing edge are labeled with callouts indicating the position of the Dynamic Island, status bar, toolbar, and tab bar respectively, from top to bottom.",
+  "view-layout-overlay": "A diagram of an overlay arrangement on the inner display of iPhone Duo. A secondary view fills the display, and a smaller, bottom-aligned primary view is overlaid on top of the secondary view.",
+  "view-layout-split": "A diagram of a split arrangement on the inner display of iPhone Duo. A secondary view fills the leading half of the display, and a primary view fills the trailing half."
+}

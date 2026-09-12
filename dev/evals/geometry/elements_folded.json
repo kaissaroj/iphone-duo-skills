@@ -1,0 +1,6 @@
+[
+ {"id":"play","label":"Play","role":"button","interactive":true,"frame":{"x":0.47,"y":0.62,"w":0.06,"h":0.08}},
+ {"id":"share","label":"Share","role":"button","interactive":true,"frame":{"x":0.92,"y":0.40,"w":0.06,"h":0.06}},
+ {"id":"title","label":"Episode 42","role":"StaticText","interactive":false,"frame":{"x":0.20,"y":0.10,"w":0.60,"h":0.05}},
+ {"id":"compose","label":"Compose","role":"button","interactive":true,"frame":{"x":0.10,"y":0.85,"w":0.08,"h":0.06}}
+]

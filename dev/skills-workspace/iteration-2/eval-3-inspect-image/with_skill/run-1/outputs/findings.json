@@ -1,0 +1,127 @@
+{
+  "image_size": [
+    1116,
+    798
+  ],
+  "screen": "Now Playing",
+  "mode": "B",
+  "pose": "inner display, partially folded (book pose), landscape; vertical bar on trailing edge (x 996-1116, 10.7% of width); hinge at x=558",
+  "findings": [
+    {
+      "id": 6,
+      "severity": "should-fix",
+      "rule": "D4",
+      "element": "Player content column (artwork, labels, transport)",
+      "title": "Content centred on full display width, not the safe area",
+      "box": [
+        386,
+        528,
+        344,
+        96
+      ],
+      "problem": "Everything is centred at x=558 (full-width centre) while the safe area ends at x=996 (centre x=498). With the bar present the whole player looks 60px off-centre to the right, and the centring is exactly what lands the Play button on the hinge.",
+      "fix": "Centre within the safe area: let the root VStack use the default safe-area layout and only put the background behind .ignoresSafeArea(). Do not compute centres from UIScreen.main.bounds / GeometryReader of the full window."
+    },
+    {
+      "id": 2,
+      "severity": "should-fix",
+      "rule": "H2",
+      "element": "Album artwork",
+      "title": "Artwork crosses the hinge",
+      "box": [
+        388,
+        90,
+        340,
+        340
+      ],
+      "problem": "The 340pt artwork is centred on the hinge; a third of it sits on the curved region and is distorted when folded.",
+      "fix": "Same ArrangementView(.split) fix as #1 - put the artwork in one pane so it never crosses the division."
+    },
+    {
+      "id": 3,
+      "severity": "should-fix",
+      "rule": "H2",
+      "element": "Title / artist labels",
+      "title": "Track title and artist text cross the hinge",
+      "box": [
+        462,
+        446,
+        162,
+        58
+      ],
+      "problem": "'Midnight City' and 'M83' are centred on x=558, so the middle glyphs sit on the fold and are hard to read.",
+      "fix": "Move the labels into the artwork pane of the ArrangementView, or lay them out with reservedRegions(kind: .division) so text is displaced off the hinge."
+    },
+    {
+      "id": 4,
+      "severity": "blocking",
+      "rule": "F1",
+      "element": "Custom bottom bar (Lyrics / Queue / Share / AirPlay / ...)",
+      "title": "Hand-built horizontal toolbar while the system bar is vertical",
+      "box": [
+        40,
+        700,
+        916,
+        60
+      ],
+      "problem": "The system has already moved its own items (the three round buttons, Edit) to the vertical bar on the trailing edge, but this row of actions is a custom HStack pinned to the bottom. It stays horizontal, spans the hinge, and duplicates the bar's role.",
+      "fix": "Delete the custom row and declare the actions as toolbar items (.toolbar { ToolbarItemGroup(placement: .bottomBar) { ... } }) so the system relocates them to the vertical bar and overflows what does not fit."
+    },
+    {
+      "id": 5,
+      "severity": "should-fix",
+      "rule": "F3",
+      "element": "'Edit' button in the vertical bar",
+      "title": "Text-only item in the vertical bar",
+      "box": [
+        1018,
+        330,
+        76,
+        45
+      ],
+      "problem": "'Edit' is a text-only item. In the vertical bar it renders as a wide pill among round symbol buttons, wastes the narrow strip and truncates when localised.",
+      "fix": "Give it a symbol and a title (Label(\"Edit\", systemImage: \"pencil\")) so it renders as a symbol in the vertical bar, or mark it .axisBehavior(.horizontalOnly) if the text must stay."
+    },
+    {
+      "id": 1,
+      "severity": "blocking",
+      "rule": "H2",
+      "element": "Play/Pause button",
+      "title": "Play button straddles the fold",
+      "box": [
+        522,
+        540,
+        72,
+        72
+      ],
+      "problem": "The primary transport control is centred at x=558, exactly on the hinge line. When the device is partially folded the tap target sits on the curve and is split between the two halves.",
+      "fix": "Split the screen into two arrangement panes with ArrangementView(.split): artwork+metadata on one half, transport controls on the other. Alternatively read reservedRegions(kind: .division) and offset the control row to whichever half has room."
+    },
+    {
+      "id": 7,
+      "severity": "nice-to-have",
+      "rule": "F7",
+      "element": "'...' in the custom bottom bar",
+      "title": "Hand-rolled ellipsis / overflow",
+      "box": [
+        712,
+        710,
+        36,
+        36
+      ],
+      "problem": "The custom row carries its own '...' item. Once the system bar overflows, this becomes a second 'more' menu (two ellipses on screen). Could not confirm from the image whether it is a menu or a button.",
+      "fix": "Remove it when the items move to .toolbar; use ToolbarOverflowMenu / additionalOverflowItems and visibilityPriority to control what overflows instead."
+    }
+  ],
+  "not_checked": [
+    "I1 parity (only one pose supplied)",
+    "H5 laptop pose (image is book pose)",
+    "G1 hierarchy (outer-display screen not supplied)",
+    "D1: nothing found under the bar - custom toolbar ends at x=956, bar starts at x=996"
+  ],
+  "guides": {
+    "fold_x_norm": 0.5,
+    "bar_edge": "trailing",
+    "bar_width_norm": 0.107
+  }
+}

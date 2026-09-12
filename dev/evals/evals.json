@@ -1,0 +1,27 @@
+{
+  "skill_name": "iphone-duo (layout / toolbars / audit)",
+  "evals": [
+    {
+      "id": 0,
+      "name": "layout-now-playing-arrangement",
+      "skill": "skills/iphone-duo-layout",
+      "prompt": "I have a SwiftUI podcast app. The Now Playing screen is a NavigationStack containing an HStack with PlayerView() on the left and TranscriptView() on the right, and I hide the transcript with a toggle. We're moving to iOS 27.1 and I need this screen to work properly on iPhone Duo — it should not straddle the fold when the device is partially open, and it should collapse sensibly when the device is closed. Rewrite the view (SwiftUI only). Save the result as NowPlayingView.swift.",
+      "expected_output": "A NowPlayingView.swift using ArrangementView { } secondary: { } with .arrangementViewStyle(.split...) inside the NavigationStack, no navigation container inside the arrangement, no invented API names."
+    },
+    {
+      "id": 1,
+      "name": "toolbar-mail-style-actions",
+      "skill": "skills/iphone-duo-toolbars",
+      "prompt": "This is a UIKit mail-style app (UINavigationController + UITabBarController). On the message list screen I need to add toolbar buttons for: Compose (most important), Filter, Select (which turns into Done while selecting), an Inbox count (currently shown as a text button like 'Inbox (12)'), and a 'More' menu containing Archive/Mark all read/Settings. We're targeting iOS 27.1 and it has to look right on iPhone Duo's vertical bars. Write the UIKit code that configures these items on the view controller. Save it as MessageListViewController+Toolbar.swift.",
+      "expected_output": "Uses navigationItem groups (no custom UIToolbar), title+image on every item, Select/Done item with axisBehavior = .horizontalOnly, inbox count as item.badge = .count(...), 'More' merged into navigationItem.additionalOverflowItems, visibilityPriority = .high on Compose, no invented API names."
+    },
+    {
+      "id": 2,
+      "name": "audit-legacy-uikit-project",
+      "skill": "skills/iphone-duo-audit",
+      "prompt": "Audit the Swift project in the 'fixture' directory for iPhone Duo readiness and write me a prioritized report as DUO-AUDIT.md. Be specific with file and line references.",
+      "expected_output": "A report that flags UIScreen.main, orientation/idiom checks, symmetric safe-area math, custom UIToolbar, image-only bar items, ellipsis on a non-overflow menu, NavigationSplitView inside ArrangementView, 3-column grid, supportedInterfaceOrientations, and centered card; ordered by severity; with correct fixes and no invented APIs.",
+      "files": ["evals/fixture/Bad.swift", "evals/fixture/Grid.swift"]
+    }
+  ]
+}

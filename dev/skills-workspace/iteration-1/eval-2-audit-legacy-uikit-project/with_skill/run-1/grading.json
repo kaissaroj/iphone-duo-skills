@@ -1,0 +1,94 @@
+{
+  "expectations": [
+    {
+      "text": "flags UIScreen.main (Bad.swift:4/5)",
+      "passed": true,
+      "evidence": "UIScreen.main"
+    },
+    {
+      "text": "flags orientation check (Bad.swift:6)",
+      "passed": true,
+      "evidence": "orientation"
+    },
+    {
+      "text": "flags userInterfaceIdiom (Bad.swift:7)",
+      "passed": true,
+      "evidence": "idiom"
+    },
+    {
+      "text": "flags symmetric safe-area math (Bad.swift:8)",
+      "passed": true,
+      "evidence": "symmetr"
+    },
+    {
+      "text": "flags custom UIToolbar (Bad.swift:9)",
+      "passed": true,
+      "evidence": "UIToolbar"
+    },
+    {
+      "text": "flags image-only bar items need a title (Bad.swift:10)",
+      "passed": true,
+      "evidence": "title"
+    },
+    {
+      "text": "flags ellipsis on custom More menu (Bad.swift:11)",
+      "passed": true,
+      "evidence": "ellipsis"
+    },
+    {
+      "text": "flags card.center (Bad.swift:13) / fold",
+      "passed": true,
+      "evidence": "center"
+    },
+    {
+      "text": "flags supportedInterfaceOrientations (Bad.swift:15)",
+      "passed": true,
+      "evidence": "supportedInterfaceOrientations"
+    },
+    {
+      "text": "flags NavigationSplitView inside ArrangementView (Grid.swift:6)",
+      "passed": true,
+      "evidence": "NavigationStack` to a hard-coded 390pt width, nests a `NavigationSplitView` inside an `ArrangementView"
+    },
+    {
+      "text": "flags 3-column grid (Grid.swift:3)",
+      "passed": true,
+      "evidence": "3-column"
+    },
+    {
+      "text": "flags fixed .frame(width: 390) (Grid.swift:8)",
+      "passed": true,
+      "evidence": "390"
+    },
+    {
+      "text": "recommends reservedRegions or ArrangementView as fix",
+      "passed": true,
+      "evidence": "ArrangementView"
+    },
+    {
+      "text": "recommends additionalOverflowItems / ToolbarOverflowMenu",
+      "passed": true,
+      "evidence": "additionalOverflowItems"
+    },
+    {
+      "text": "cites file:line references",
+      "passed": true,
+      "evidence": ".swift:4"
+    },
+    {
+      "text": "has severity tiers",
+      "passed": true,
+      "evidence": "Blocking"
+    },
+    {
+      "text": "no invented / unverified API names",
+      "passed": true,
+      "evidence": "none found"
+    }
+  ],
+  "summary": {
+    "passed": 17,
+    "total": 17,
+    "pass_rate": 1.0
+  }
+}

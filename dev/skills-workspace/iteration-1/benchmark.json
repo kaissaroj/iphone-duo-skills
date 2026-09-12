@@ -1,0 +1,503 @@
+{
+  "metadata": {
+    "skill_name": "iphone-duo",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-09-12T13:53:57Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 65.6,
+        "tokens": 88201,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "uses ArrangementView with primary/secondary closure",
+          "passed": true,
+          "evidence": "ArrangementView {\n                PlayerView()          // primary: never hidden\n            } secondary: {"
+        },
+        {
+          "text": "sets .arrangementViewStyle(.split\u2026)",
+          "passed": true,
+          "evidence": ".arrangementViewStyle(.split"
+        },
+        {
+          "text": "arrangement is inside NavigationStack (not the reverse)",
+          "passed": true,
+          "evidence": "NavigationStack {\n            Group {\n                if isCompact {\n                    compactContent\n                "
+        },
+        {
+          "text": "no navigation container inside ArrangementView",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "no HStack used for the two panes",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "does not use UIScreen.main or orientation checks",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "no invented / unverified API names",
+          "passed": true,
+          "evidence": "none found"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 116.8,
+        "tokens": 90565,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "no custom UIToolbar instantiated",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "items configured via navigationItem groups or pinnedTrailingGroup",
+          "passed": true,
+          "evidence": "navigationItem.pinnedTrailingGroup"
+        },
+        {
+          "text": "Select/Done item uses axisBehavior = .horizontalOnly",
+          "passed": true,
+          "evidence": "axisBehavior = .horizontalOnly"
+        },
+        {
+          "text": "Inbox count uses badge = .count(\u2026)",
+          "passed": true,
+          "evidence": ".badge = inboxUnreadCount > 0 ? .count("
+        },
+        {
+          "text": "More menu merged into additionalOverflowItems",
+          "passed": true,
+          "evidence": "additionalOverflowItems ="
+        },
+        {
+          "text": "Compose has visibilityPriority = .high",
+          "passed": true,
+          "evidence": "visibilityPriority = .high"
+        },
+        {
+          "text": "every UIBarButtonItem has both title and image",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "does not put ellipsis on a non-overflow menu",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "no invented / unverified API names",
+          "passed": true,
+          "evidence": "none found"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 17,
+        "failed": 0,
+        "total": 17,
+        "time_seconds": 85.4,
+        "tokens": 90952,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "flags UIScreen.main (Bad.swift:4/5)",
+          "passed": true,
+          "evidence": "UIScreen.main"
+        },
+        {
+          "text": "flags orientation check (Bad.swift:6)",
+          "passed": true,
+          "evidence": "orientation"
+        },
+        {
+          "text": "flags userInterfaceIdiom (Bad.swift:7)",
+          "passed": true,
+          "evidence": "idiom"
+        },
+        {
+          "text": "flags symmetric safe-area math (Bad.swift:8)",
+          "passed": true,
+          "evidence": "symmetr"
+        },
+        {
+          "text": "flags custom UIToolbar (Bad.swift:9)",
+          "passed": true,
+          "evidence": "UIToolbar"
+        },
+        {
+          "text": "flags image-only bar items need a title (Bad.swift:10)",
+          "passed": true,
+          "evidence": "title"
+        },
+        {
+          "text": "flags ellipsis on custom More menu (Bad.swift:11)",
+          "passed": true,
+          "evidence": "ellipsis"
+        },
+        {
+          "text": "flags card.center (Bad.swift:13) / fold",
+          "passed": true,
+          "evidence": "center"
+        },
+        {
+          "text": "flags supportedInterfaceOrientations (Bad.swift:15)",
+          "passed": true,
+          "evidence": "supportedInterfaceOrientations"
+        },
+        {
+          "text": "flags NavigationSplitView inside ArrangementView (Grid.swift:6)",
+          "passed": true,
+          "evidence": "NavigationStack` to a hard-coded 390pt width, nests a `NavigationSplitView` inside an `ArrangementView"
+        },
+        {
+          "text": "flags 3-column grid (Grid.swift:3)",
+          "passed": true,
+          "evidence": "3-column"
+        },
+        {
+          "text": "flags fixed .frame(width: 390) (Grid.swift:8)",
+          "passed": true,
+          "evidence": "390"
+        },
+        {
+          "text": "recommends reservedRegions or ArrangementView as fix",
+          "passed": true,
+          "evidence": "ArrangementView"
+        },
+        {
+          "text": "recommends additionalOverflowItems / ToolbarOverflowMenu",
+          "passed": true,
+          "evidence": "additionalOverflowItems"
+        },
+        {
+          "text": "cites file:line references",
+          "passed": true,
+          "evidence": ".swift:4"
+        },
+        {
+          "text": "has severity tiers",
+          "passed": true,
+          "evidence": "Blocking"
+        },
+        {
+          "text": "no invented / unverified API names",
+          "passed": true,
+          "evidence": "none found"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5714285714285714,
+        "passed": 4,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 55.0,
+        "tokens": 78413,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "uses ArrangementView with primary/secondary closure",
+          "passed": false,
+          "evidence": "not found"
+        },
+        {
+          "text": "sets .arrangementViewStyle(.split\u2026)",
+          "passed": false,
+          "evidence": "not found"
+        },
+        {
+          "text": "arrangement is inside NavigationStack (not the reverse)",
+          "passed": false,
+          "evidence": "not found"
+        },
+        {
+          "text": "no navigation container inside ArrangementView",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "no HStack used for the two panes",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "does not use UIScreen.main or orientation checks",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "no invented / unverified API names",
+          "passed": true,
+          "evidence": "none found"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5555555555555556,
+        "passed": 5,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 81.0,
+        "tokens": 80913,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "no custom UIToolbar instantiated",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "items configured via navigationItem groups or pinnedTrailingGroup",
+          "passed": true,
+          "evidence": "navigationItem.pinnedTrailingGroup"
+        },
+        {
+          "text": "Select/Done item uses axisBehavior = .horizontalOnly",
+          "passed": false,
+          "evidence": "not found"
+        },
+        {
+          "text": "Inbox count uses badge = .count(\u2026)",
+          "passed": false,
+          "evidence": "not found"
+        },
+        {
+          "text": "More menu merged into additionalOverflowItems",
+          "passed": false,
+          "evidence": "not found"
+        },
+        {
+          "text": "Compose has visibilityPriority = .high",
+          "passed": false,
+          "evidence": "not found"
+        },
+        {
+          "text": "every UIBarButtonItem has both title and image",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "does not put ellipsis on a non-overflow menu",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "no invented / unverified API names",
+          "passed": true,
+          "evidence": "none found"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8823529411764706,
+        "passed": 15,
+        "failed": 0,
+        "total": 17,
+        "time_seconds": 67.5,
+        "tokens": 79841,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "flags UIScreen.main (Bad.swift:4/5)",
+          "passed": true,
+          "evidence": "UIScreen.main"
+        },
+        {
+          "text": "flags orientation check (Bad.swift:6)",
+          "passed": true,
+          "evidence": "orientation"
+        },
+        {
+          "text": "flags userInterfaceIdiom (Bad.swift:7)",
+          "passed": true,
+          "evidence": "userInterfaceIdiom"
+        },
+        {
+          "text": "flags symmetric safe-area math (Bad.swift:8)",
+          "passed": true,
+          "evidence": "symmetr"
+        },
+        {
+          "text": "flags custom UIToolbar (Bad.swift:9)",
+          "passed": true,
+          "evidence": "UIToolbar"
+        },
+        {
+          "text": "flags image-only bar items need a title (Bad.swift:10)",
+          "passed": false,
+          "evidence": "not found"
+        },
+        {
+          "text": "flags ellipsis on custom More menu (Bad.swift:11)",
+          "passed": true,
+          "evidence": "ellipsis"
+        },
+        {
+          "text": "flags card.center (Bad.swift:13) / fold",
+          "passed": true,
+          "evidence": "center"
+        },
+        {
+          "text": "flags supportedInterfaceOrientations (Bad.swift:15)",
+          "passed": true,
+          "evidence": "supportedInterfaceOrientations"
+        },
+        {
+          "text": "flags NavigationSplitView inside ArrangementView (Grid.swift:6)",
+          "passed": true,
+          "evidence": "NavigationStack` wrapping `NavigationSplitView` \u2014 `Grid.swift:5-7`\n```swift\nNavigationStack {\n    ArrangementView"
+        },
+        {
+          "text": "flags 3-column grid (Grid.swift:3)",
+          "passed": true,
+          "evidence": "3-column"
+        },
+        {
+          "text": "flags fixed .frame(width: 390) (Grid.swift:8)",
+          "passed": true,
+          "evidence": "390"
+        },
+        {
+          "text": "recommends reservedRegions or ArrangementView as fix",
+          "passed": true,
+          "evidence": "ArrangementView"
+        },
+        {
+          "text": "recommends additionalOverflowItems / ToolbarOverflowMenu",
+          "passed": false,
+          "evidence": "not found"
+        },
+        {
+          "text": "cites file:line references",
+          "passed": true,
+          "evidence": ".swift:15"
+        },
+        {
+          "text": "has severity tiers",
+          "passed": true,
+          "evidence": "High"
+        },
+        {
+          "text": "no invented / unverified API names",
+          "passed": true,
+          "evidence": "none found"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 89.2667,
+        "stddev": 25.8181,
+        "min": 65.6,
+        "max": 116.8
+      },
+      "tokens": {
+        "mean": 89906.0,
+        "stddev": 1489.1981,
+        "min": 88201,
+        "max": 90952
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.6698,
+        "stddev": 0.1843,
+        "min": 0.5556,
+        "max": 0.8824
+      },
+      "time_seconds": {
+        "mean": 67.8333,
+        "stddev": 13.0032,
+        "min": 55.0,
+        "max": 81.0
+      },
+      "tokens": {
+        "mean": 79722.3333,
+        "stddev": 1254.2174,
+        "min": 78413,
+        "max": 80913
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.33",
+      "time_seconds": "+21.4",
+      "tokens": "+10184"
+    }
+  },
+  "notes": []
+}

@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "iphone-duo", "runs": [{"id": "eval-0-layout-now-playing-arrangement-with_skill-run-1", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "NOTES.md", "type": "text", "content": "# NowPlayingView for iPhone Duo \u2014 notes\n\n## What changed and why\n\n**`HStack` \u2192 `ArrangementView` (`.split`).**\nThe original `HStack { PlayerView(); TranscriptView() }` is a fixed two-column layout. On the\ninner display, when the device is partially folded, the hinge lands wherever the HStack's\ndivider happens to be, so one pane (or the centered player artwork) straddles the fold.\n`ArrangementView` (new in iOS 27.1) holds exactly two views \u2014 primary and secondary \u2014 and\npositions them from size class, aspect ratio and the active division (fold) region. When the\ndevice is folded it keeps each pane inside its own region. Apple's own worked example for this\nAPI is Podcasts' Now Playing + transcript, and the migration table maps `HStack`/`VStack` to\n`.split`.\n\n`.split` was chosen over `.overlay` because player and transcript are a main/detail pair where\nneither should be obscured. Default `.split` (both axes allowed) is used rather than\n`.split.axes(.horizontal)`: with an axis restriction, a taller-than-wide arrangement would show\n*only* the primary and silently drop the transcript. Unrestricted, it goes side-by-side when\nwider than tall (open flat / landscape) and stacks vertically when taller than wide (open,\nportrait) \u2014 the same \"transcript inline when tall\" behaviour Podcasts uses.\n\n**Navigation stays outside the arrangement.** The `NavigationStack` wraps the `ArrangementView`;\nthe toolbar toggle lives on the stack, not inside a pane. Apple's hard rule: never put\n`NavigationStack`/`NavigationSplitView`/`TabView` inside an arrangement, and never put an\narrangement inside a `List`/`ScrollView`.\n\n**Collapsing when closed.** Size classes are the whole story on Duo: outer display = compact\nwidth, inner display = regular width, regardless of pose or orientation. So the view branches\non `horizontalSizeClass` only:\n\n- regular \u2192 `ArrangementView` with the transcript as the secondary pane, or `PlayerView` alone\n  when the user toggles the transcript off;\n- compact \u2192 `PlayerView` alone; the transcript is presented as a `.sheet` with\n  medium/large detents. Sheets are system components, so they avoid the fold and the outer\n  camera automatically and behave correctly in a narrow Split View multitasking slot too.\n\nWhen the device opens while the sheet is showing, `onChange(of: isCompact)` dismisses the sheet\nso the transcript reappears as a pane rather than a modal.\n\n**Things deliberately not used.** No interface-orientation checks (the inner display ignores\nthe supported-orientation list), no `UIDevice.userInterfaceIdiom` (`.phone` can be\nregular/regular now), no `UIScreen.main`, no fixed widths or breakpoints (Split View\nmultitasking and pinned PiP resize the app at runtime), and no `GeometryReader` fold math \u2014\nthe arrangement container already does fold avoidance.\n\n## Follow-ups the caller may want\n\n- **`PlayerView` internals.** If `PlayerView` manually centers artwork/transport controls on\n  the full width, they can still straddle the fold when the transcript is hidden and the player\n  owns the whole inner display. Options: keep `isTranscriptVisible` on but render the secondary\n  as a collapsed placeholder, or inside `PlayerView` query\n  `proxy.reservedRegions(kind: .division)` from `onGeometryChange` and displace the control\n  cluster toward the trailing region (book pose) / bottom region (laptop pose). Scrolling\n  transcript text should *not* displace.\n- **Safe area.** `PlayerView`'s tappable controls must stay inside the (asymmetric)\n  safe area \u2014 SwiftUI does this by default; only background artwork should\n  `.ignoresSafeArea()`.\n- **Testing.** Xcode 27.1 \u2192 Device Hub \u2192 iPhone Duo simulator; use the fold/open/close/rotate\n  buttons and drag the app to each side of the inner display for Split View.\n"}, {"name": "NowPlayingView.swift", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,aW1wb3J0IFN3aWZ0VUkKCi8vLyBOb3cgUGxheWluZyBzY3JlZW4gZm9yIHRoZSBwb2RjYXN0IGFwcCwgYWRhcHRlZCBmb3IgaVBob25lIER1byAoaU9TIDI3LjEpLgovLy8KLy8vIExheW91dCBzdHJhdGVneSAoc2VlIE5PVEVTLm1kKToKLy8vIC0gUmVndWxhciB3aWR0aCAoaW5uZXIgZGlzcGxheSwgb3Blbik6IGBBcnJhbmdlbWVudFZpZXdgIGluIGAuc3BsaXRgIHN0eWxlIGhvbGRzCi8vLyAgIGBQbGF5ZXJWaWV3YCAocHJpbWFyeSkgYW5kIGBUcmFuc2NyaXB0Vmlld2AgKHNlY29uZGFyeSkuIFRoZSBzeXN0ZW0gcG9zaXRpb25zIHRoZQovLy8gICB0d28gcGFuZXMgZnJvbSBzaXplIGNsYXNzICsgYXNwZWN0IHJhdGlvIGFuZCBrZWVwcyBlYWNoIHBhbmUgaW5zaWRlIGl0cyBvd24KLy8vICAgcmVnaW9uIHdoZW4gdGhlIGRldmljZSBpcyBwYXJ0aWFsbHkgZm9sZGVkLCBzbyBub3RoaW5nIHN0cmFkZGxlcyB0aGUgaGluZ2UuCi8vLyAtIENvbXBhY3Qgd2lkdGggKG91dGVyIGRpc3BsYXksIGNsb3NlZDsgb3IgYSBuYXJyb3cgU3BsaXQgVmlldyBtdWx0aXRhc2tpbmcgc2xvdCk6Ci8vLyAgIG9ubHkgYFBsYXllclZpZXdgIGlzIHNob3duLCBhbmQgdGhlIHRyYW5zY3JpcHQgaXMgcHJlc2VudGVkIGFzIGEgc2hlZXQgb24gZGVtYW5kLgovLy8KLy8vIE5vIG9yaWVudGF0aW9uIGNoZWNrcywgbm8gYFVJU2NyZWVuLm1haW5gLCBubyBmaXhlZCB3aWR0aHMg4oCUIHRoZSBsYXlvdXQgaXMgZHJpdmVuCi8vLyBwdXJlbHkgYnkgdGhlIHNpemUtY2xhc3MgZW52aXJvbm1lbnQgYW5kIHRoZSBhcnJhbmdlbWVudCBjb250YWluZXIuCnN0cnVjdCBOb3dQbGF5aW5nVmlldzogVmlldyB7CiAgICBARW52aXJvbm1lbnQoXC5ob3Jpem9udGFsU2l6ZUNsYXNzKSBwcml2YXRlIHZhciBob3Jpem9udGFsU2l6ZUNsYXNzCgogICAgLy8vIFdoZXRoZXIgdGhlIHRyYW5zY3JpcHQgcGFuZSBpcyB2aXNpYmxlIGFsb25nc2lkZSB0aGUgcGxheWVyIChyZWd1bGFyIHdpZHRoKS4KICAgIEBTdGF0ZSBwcml2YXRlIHZhciBpc1RyYW5zY3JpcHRWaXNpYmxlID0gdHJ1ZQoKICAgIC8vLyBXaGV0aGVyIHRoZSB0cmFuc2NyaXB0IHNoZWV0IGlzIHByZXNlbnRlZCAoY29tcGFjdCB3aWR0aCkuCiAgICBAU3RhdGUgcHJpdmF0ZSB2YXIgaXNUcmFuc2NyaXB0U2hlZXRQcmVzZW50ZWQgPSBmYWxzZQoKICAgIHByaXZhdGUgdmFyIGlzQ29tcGFjdDogQm9vbCB7IGhvcml6b250YWxTaXplQ2xhc3MgPT0gLmNvbXBhY3QgfQoKICAgIHZhciBib2R5OiBzb21lIFZpZXcgewogICAgICAgIC8vIE5hdmlnYXRpb24gc3RheXMgT1VUU0lERSB0aGUgYXJyYW5nZW1lbnQsIHBlciBBcHBsZSdzIGd1aWRhbmNlLgogICAgICAgIE5hdmlnYXRpb25TdGFjayB7CiAgICAgICAgICAgIEdyb3VwIHsKICAgICAgICAgICAgICAgIGlmIGlzQ29tcGFjdCB7CiAgICAgICAgICAgICAgICAgICAgY29tcGFjdENvbnRlbnQKICAgICAgICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgICAgICAgICAgcmVndWxhckNvbnRlbnQKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgICAgICAubmF2aWdhdGlvblRpdGxlKCJOb3cgUGxheWluZyIpCiAgICAgICAgICAgIC5uYXZpZ2F0aW9uQmFyVGl0bGVEaXNwbGF5TW9kZSguaW5saW5lKQogICAgICAgICAgICAudG9vbGJhciB7CiAgICAgICAgICAgICAgICBUb29sYmFySXRlbShwbGFjZW1lbnQ6IC5wcmltYXJ5QWN0aW9uKSB7CiAgICAgICAgICAgICAgICAgICAgdHJhbnNjcmlwdFRvZ2dsZQogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAgICAgICAgIC5zaGVldChpc1ByZXNlbnRlZDogJGlzVHJhbnNjcmlwdFNoZWV0UHJlc2VudGVkKSB7CiAgICAgICAgICAgICAgICAvLyBTaGVldHMgYXZvaWQgdGhlIGZvbGQgYXV0b21hdGljYWxseTsgdGhleSBhcmUgYWxzbyB0aGUgbmF0dXJhbAogICAgICAgICAgICAgICAgLy8gImNvbGxhcHNlZCIgZm9ybSBvZiB0aGUgdHJhbnNjcmlwdCBvbiB0aGUgb3V0ZXIgZGlzcGxheS4KICAgICAgICAgICAgICAgIE5hdmlnYXRpb25TdGFjayB7CiAgICAgICAgICAgICAgICAgICAgVHJhbnNjcmlwdFZpZXcoKQogICAgICAgICAgICAgICAgICAgICAgICAubmF2aWdhdGlvblRpdGxlKCJUcmFuc2NyaXB0IikKICAgICAgICAgICAgICAgICAgICAgICAgLm5hdmlnYXRpb25CYXJUaXRsZURpc3BsYXlNb2RlKC5pbmxpbmUpCiAgICAgICAgICAgICAgICAgICAgICAgIC50b29sYmFyIHsKICAgICAgICAgICAgICAgICAgICAgICAgICAgIFRvb2xiYXJJdGVtKHBsYWNlbWVudDogLmNvbmZpcm1hdGlvbkFjdGlvbikgewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEJ1dHRvbigiRG9uZSIpIHsgaXNUcmFuc2NyaXB0U2hlZXRQcmVzZW50ZWQgPSBmYWxzZSB9CiAgICAgICAgICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIC5wcmVzZW50YXRpb25EZXRlbnRzKFsubWVkaXVtLCAubGFyZ2VdKQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgICAgIC8vIExlYXZpbmcgdGhlIGNvbXBhY3Qgc2l6ZSBjbGFzcyAoZGV2aWNlIG9wZW5lZCkgd2hpbGUgdGhlIHNoZWV0IGlzIHVwOgogICAgICAgIC8vIGRpc21pc3MgaXQgc28gdGhlIHRyYW5zY3JpcHQgcmVhcHBlYXJzIGFzIHRoZSBzZWNvbmRhcnkgcGFuZSBpbnN0ZWFkLgogICAgICAgIC5vbkNoYW5nZShvZjogaXNDb21wYWN0KSB7IF8sIG5vd0NvbXBhY3QgaW4KICAgICAgICAgICAgaWYgIW5vd0NvbXBhY3QgeyBpc1RyYW5zY3JpcHRTaGVldFByZXNlbnRlZCA9IGZhbHNlIH0KICAgICAgICB9CiAgICB9CgogICAgLy8gTUFSSzogLSBSZWd1bGFyIHdpZHRoIChpbm5lciBkaXNwbGF5KQoKICAgIEBWaWV3QnVpbGRlcgogICAgcHJpdmF0ZSB2YXIgcmVndWxhckNvbnRlbnQ6IHNvbWUgVmlldyB7CiAgICAgICAgaWYgaXNUcmFuc2NyaXB0VmlzaWJsZSB7CiAgICAgICAgICAgIEFycmFuZ2VtZW50VmlldyB7CiAgICAgICAgICAgICAgICBQbGF5ZXJWaWV3KCkgICAgICAgICAgLy8gcHJpbWFyeTogbmV2ZXIgaGlkZGVuCiAgICAgICAgICAgIH0gc2Vjb25kYXJ5OiB7CiAgICAgICAgICAgICAgICBUcmFuc2NyaXB0VmlldygpICAgICAgLy8gc2Vjb25kYXJ5OiBtYWluL2RldGFpbCwgbXVzdCBub3QgYmUgb2JzY3VyZWQgLT4gLnNwbGl0CiAgICAgICAgICAgIH0KICAgICAgICAgICAgLy8gRGVmYXVsdCBgLnNwbGl0YDogaG9yaXpvbnRhbCB3aGVuIHdpZGVyIHRoYW4gdGFsbCAob3BlbiBmbGF0LCBsYW5kc2NhcGUpLAogICAgICAgICAgICAvLyB2ZXJ0aWNhbCB3aGVuIHRhbGxlciB0aGFuIHdpZGUgKG9wZW4sIHBvcnRyYWl0KS4gQm90aCBheGVzIGFyZSBhbGxvd2VkIHNvCiAgICAgICAgICAgIC8vIHRoZSB0cmFuc2NyaXB0IGlzIG5ldmVyIGRyb3BwZWQgYnkgYW4gYXhpcyByZXN0cmljdGlvbi4KICAgICAgICAgICAgLmFycmFuZ2VtZW50Vmlld1N0eWxlKC5zcGxpdCkKICAgICAgICB9IGVsc2UgewogICAgICAgICAgICAvLyBUcmFuc2NyaXB0IGNvbGxhcHNlZDogdGhlIHBsYXllciBnZXRzIHRoZSB3aG9sZSBhcmVhLiBBcnJhbmdlbWVudFZpZXcncwogICAgICAgICAgICAvLyBzcGxpdCBrZWVwcyB0aGUgcHJpbWFyeSBjb25zdHJhaW5lZCB0byBvbmUgcmVnaW9uIHdoZW4gZm9sZGVkOyBhIGxvbmUKICAgICAgICAgICAgLy8gUGxheWVyVmlldyBpcyBzdGlsbCBwb3NpdGlvbmVkIGluc2lkZSB0aGUgc2FmZSBhcmVhIGFuZCBpdHMgb3duCiAgICAgICAgICAgIC8vIHNjcm9sbGluZy9jZW50ZXJlZCBjb250ZW50IHNob3VsZCBhdm9pZCB0aGUgZm9sZCB2aWEgUGxheWVyVmlldydzCiAgICAgICAgICAgIC8vIHN5c3RlbSBjb21wb25lbnRzLiBJZiBQbGF5ZXJWaWV3IGhhcyBjdXN0b20gY2VudGVyZWQgY29udHJvbHMsIHNlZQogICAgICAgICAgICAvLyBOT1RFUy5tZCBmb3IgdGhlIHJlc2VydmVkLXJlZ2lvbiBkaXNwbGFjZW1lbnQgaG9vay4KICAgICAgICAgICAgUGxheWVyVmlldygpCiAgICAgICAgfQogICAgfQoKICAgIC8vIE1BUks6IC0gQ29tcGFjdCB3aWR0aCAob3V0ZXIgZGlzcGxheSAvIG5hcnJvdyBtdWx0aXRhc2tpbmcgc2xvdCkKCiAgICBwcml2YXRlIHZhciBjb21wYWN0Q29udGVudDogc29tZSBWaWV3IHsKICAgICAgICBQbGF5ZXJWaWV3KCkKICAgIH0KCiAgICAvLyBNQVJLOiAtIFRvb2xiYXIKCiAgICBwcml2YXRlIHZhciB0cmFuc2NyaXB0VG9nZ2xlOiBzb21lIFZpZXcgewogICAgICAgIEJ1dHRvbiB7CiAgICAgICAgICAgIGlmIGlzQ29tcGFjdCB7CiAgICAgICAgICAgICAgICBpc1RyYW5zY3JpcHRTaGVldFByZXNlbnRlZC50b2dnbGUoKQogICAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICAgICAgd2l0aEFuaW1hdGlvbiB7IGlzVHJhbnNjcmlwdFZpc2libGUudG9nZ2xlKCkgfQogICAgICAgICAgICB9CiAgICAgICAgfSBsYWJlbDogewogICAgICAgICAgICBsZXQgc2hvd2luZyA9IGlzQ29tcGFjdCA/IGlzVHJhbnNjcmlwdFNoZWV0UHJlc2VudGVkIDogaXNUcmFuc2NyaXB0VmlzaWJsZQogICAgICAgICAgICBMYWJlbChzaG93aW5nID8gIkhpZGUgVHJhbnNjcmlwdCIgOiAiU2hvdyBUcmFuc2NyaXB0IiwKICAgICAgICAgICAgICAgICAgc3lzdGVtSW1hZ2U6IHNob3dpbmcgPyAidGV4dC5xdW90ZSIgOiAidGV4dC5xdW90ZSIpCiAgICAgICAgICAgICAgICAuc3ltYm9sVmFyaWFudChzaG93aW5nID8gLmZpbGwgOiAubm9uZSkKICAgICAgICB9CiAgICAgICAgLmFjY2Vzc2liaWxpdHlMYWJlbCgKICAgICAgICAgICAgKGlzQ29tcGFjdCA/IGlzVHJhbnNjcmlwdFNoZWV0UHJlc2VudGVkIDogaXNUcmFuc2NyaXB0VmlzaWJsZSkKICAgICAgICAgICAgICAgID8gIkhpZGUgVHJhbnNjcmlwdCIgOiAiU2hvdyBUcmFuc2NyaXB0IgogICAgICAgICkKICAgIH0KfQoKI1ByZXZpZXcoIk5vdyBQbGF5aW5nIikgewogICAgTm93UGxheWluZ1ZpZXcoKQp9Cg=="}], "grading": {"expectations": [{"text": "uses ArrangementView with primary/secondary closure", "passed": true, "evidence": "ArrangementView {\n                PlayerView()          // primary: never hidden\n            } secondary: {"}, {"text": "sets .arrangementViewStyle(.split\u2026)", "passed": true, "evidence": ".arrangementViewStyle(.split"}, {"text": "arrangement is inside NavigationStack (not the reverse)", "passed": true, "evidence": "NavigationStack {\n            Group {\n                if isCompact {\n                    compactContent\n                "}, {"text": "no navigation container inside ArrangementView", "passed": true, "evidence": ""}, {"text": "no HStack used for the two panes", "passed": true, "evidence": ""}, {"text": "does not use UIScreen.main or orientation checks", "passed": true, "evidence": ""}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "summary": {"passed": 7, "total": 7, "pass_rate": 1.0}}}, {"id": "eval-0-layout-now-playing-arrangement-without_skill-run-1", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "NOTES.md", "type": "text", "content": "# NowPlayingView \u2014 notes\n\n## What changed\n\nThe original view was a `NavigationStack { HStack { PlayerView(); TranscriptView() } }` with the\ntranscript toggled on/off. That has two problems on a folding device:\n\n1. An `HStack` with two flexible children splits the width proportionally, so on an unfolded\n   iPhone Duo the seam between the two views rarely lands on the hinge \u2014 controls and text end up\n   straddling the fold.\n2. When the device closes, the width drops to a compact size class and the same `HStack` squeezes\n   both views into one narrow column.\n\n## Approach\n\nThe rewrite resolves one of three layouts from **size classes + the proposed container size**\n(via `GeometryReader`), instead of branching on device model:\n\n| State                                  | Layout      | Details |\n|----------------------------------------|-------------|---------|\n| Unfolded (regular width, >= 640 pt)    | `twoPane`   | Player left, transcript right. Each pane is pinned to exactly half the width with `containerRelativeFrame(.horizontal, count: 2, span: 1)`, and a 24 pt centre gutter is carved from each pane's inner edge so nothing crosses the middle. |\n| Closed, tall (compact width, >= 700 pt)| `stacked`   | Player on top (layout priority 1), transcript below. |\n| Closed & short, or transcript hidden   | `single`    | Player only. If the transcript is enabled, a bottom \"Show Transcript\" button opens it as a `.medium/.large` detent sheet. |\n\nLayout switches are animated with `.snappy` so opening/closing the device or flipping the toggle\ntransitions smoothly.\n\n## Why not read the hinge directly\n\nDeliberately no UIKit, no hard-coded hinge rects, and no device-model checks. Halving the\ncontainer width keeps the seam on the hinge for any symmetric fold, and the size-class guard\nhandles the closed state. If iOS 27.1 ships a SwiftUI environment value for the fold/hinge\nregion, the `centreGutter` constant is the single place to swap in that value.\n\n## Assumptions\n\n- `PlayerView()` and `TranscriptView()` exist and are flexible (fill their proposed size).\n- The `twoPaneMinimumWidth` (640) and stacked-height threshold (700) are tunable constants;\n  adjust once real Duo dimensions are confirmed.\n"}, {"name": "NowPlayingView.swift", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,aW1wb3J0IFN3aWZ0VUkKCi8vIE1BUks6IC0gTm93IFBsYXlpbmcKLy8KLy8gRm9sZC1hd2FyZSBOb3cgUGxheWluZyBzY3JlZW4gZm9yIGEgcG9kY2FzdCBhcHAuCi8vCi8vIExheW91dCBzdHJhdGVneSAobm8gVUlLaXQsIG5vIGhhcmRjb2RlZCBoaW5nZSBnZW9tZXRyeSk6Ci8vCi8vICAgKiBXaWRlIC8gdW5mb2xkZWQgKHJlZ3VsYXIgaG9yaXpvbnRhbCBzaXplIGNsYXNzLCBlbm91Z2ggd2lkdGgpOgovLyAgICAgICBQbGF5ZXIgYW5kIFRyYW5zY3JpcHQgc2l0IHNpZGUgYnkgc2lkZSwgb25lIHBlciAicGFuZSIuIEVhY2ggcGFuZSBpcwovLyAgICAgICBsYWlkIG91dCBmcm9tIHRoZSAqb3V0ZXIqIGVkZ2UgaW53YXJkcyBhbmQgaXMgcGFkZGVkIGF3YXkgZnJvbSB0aGUKLy8gICAgICAgY2VudHJlIG9mIHRoZSBjb250YWluZXIgc28gbm90aGluZyBpbXBvcnRhbnQgc3RyYWRkbGVzIHRoZSBmb2xkLgovLyAgICAgICBUaGUgc2VhbSBiZXR3ZWVuIHRoZSB0d28gcGFuZXMgaXMgZGVsaWJlcmF0ZWx5IGxlZnQgZW1wdHkuCi8vCi8vICAgKiBOYXJyb3cgLyBjbG9zZWQgKGNvbXBhY3QgaG9yaXpvbnRhbCBzaXplIGNsYXNzLCBvciB0aGUgd2luZG93IGlzIG5hcnJvdwovLyAgICAgICBlbm91Z2ggdGhhdCB0d28gcGFuZXMgZG9uJ3QgZml0KToKLy8gICAgICAgVGhlIEhTdGFjayBjb2xsYXBzZXMgaW50byBhIHNpbmdsZS1jb2x1bW4gbGF5b3V0LiBUaGUgdHJhbnNjcmlwdCBpcwovLyAgICAgICBzaG93biBhcyBhIHNoZWV0LWxpa2UgaW5zcGVjdG9yIGJlbG93IHRoZSBwbGF5ZXIgKG9yIGFzIGEgZnVsbAovLyAgICAgICBzaGVldCB3aGVuIHRoZSBoZWlnaHQgaXMgYWxzbyBjb25zdHJhaW5lZCkgaW5zdGVhZCBvZiBzcXVlZXppbmcgYm90aAovLyAgICAgICB2aWV3cyBpbnRvIG9uZSBuYXJyb3cgY29sdW1uLgovLwovLyAgICogVGhlIGBpc1RyYW5zY3JpcHRWaXNpYmxlYCB0b2dnbGUgc3RpbGwgd29ya3MgaW4gZXZlcnkgY29uZmlndXJhdGlvbi4KLy8KLy8gVGhlIGRlY2lzaW9uIGlzIGRyaXZlbiBwdXJlbHkgYnkgc2l6ZSBjbGFzc2VzIGFuZCB0aGUgcHJvcG9zZWQgY29udGFpbmVyCi8vIHNpemUsIHNvIHRoZSBzYW1lIGNvZGUgYmVoYXZlcyBjb3JyZWN0bHkgb24gaVBob25lLCBpUGhvbmUgRHVvIChvcGVuIC8KLy8gaGFsZi1vcGVuIC8gY2xvc2VkKSBhbmQgaVBhZCB3aXRob3V0IGJyYW5jaGluZyBvbiBkZXZpY2UgbW9kZWwuCgpzdHJ1Y3QgTm93UGxheWluZ1ZpZXc6IFZpZXcgewogICAgQEVudmlyb25tZW50KFwuaG9yaXpvbnRhbFNpemVDbGFzcykgcHJpdmF0ZSB2YXIgaG9yaXpvbnRhbFNpemVDbGFzcwogICAgQEVudmlyb25tZW50KFwudmVydGljYWxTaXplQ2xhc3MpIHByaXZhdGUgdmFyIHZlcnRpY2FsU2l6ZUNsYXNzCgogICAgQFN0YXRlIHByaXZhdGUgdmFyIGlzVHJhbnNjcmlwdFZpc2libGUgPSB0cnVlCiAgICBAU3RhdGUgcHJpdmF0ZSB2YXIgc2hvd3NUcmFuc2NyaXB0U2hlZXQgPSBmYWxzZQoKICAgIC8vLyBCZWxvdyB0aGlzIHdpZHRoIHdlIG5ldmVyIGF0dGVtcHQgYSB0d28tcGFuZSBsYXlvdXQsIHJlZ2FyZGxlc3Mgb2YKICAgIC8vLyBzaXplIGNsYXNzIChndWFyZHMgYWdhaW5zdCBoYWxmLW9wZW4gLyBuYXJyb3cgd2luZG93IHN0YXRlcykuCiAgICBwcml2YXRlIGxldCB0d29QYW5lTWluaW11bVdpZHRoOiBDR0Zsb2F0ID0gNjQwCgogICAgLy8vIEd1dHRlciBrZXB0IGNsZWFyIG9uIGVpdGhlciBzaWRlIG9mIHRoZSBjZW50cmUgbGluZS4gT24gYSBmb2xkaW5nCiAgICAvLy8gZGV2aWNlIHRoaXMgaXMgdGhlIGFyZWEgdGhhdCBzaXRzIG92ZXIgdGhlIGhpbmdlLgogICAgcHJpdmF0ZSBsZXQgY2VudHJlR3V0dGVyOiBDR0Zsb2F0ID0gMjQKCiAgICB2YXIgYm9keTogc29tZSBWaWV3IHsKICAgICAgICBOYXZpZ2F0aW9uU3RhY2sgewogICAgICAgICAgICBHZW9tZXRyeVJlYWRlciB7IHByb3h5IGluCiAgICAgICAgICAgICAgICBsZXQgc2l6ZSA9IHByb3h5LnNpemUKICAgICAgICAgICAgICAgIGxldCBsYXlvdXQgPSByZXNvbHZlZExheW91dChmb3I6IHNpemUpCgogICAgICAgICAgICAgICAgR3JvdXAgewogICAgICAgICAgICAgICAgICAgIHN3aXRjaCBsYXlvdXQgewogICAgICAgICAgICAgICAgICAgIGNhc2UgLnR3b1BhbmU6CiAgICAgICAgICAgICAgICAgICAgICAgIHR3b1BhbmVMYXlvdXQod2lkdGg6IHNpemUud2lkdGgpCiAgICAgICAgICAgICAgICAgICAgY2FzZSAuc3RhY2tlZDoKICAgICAgICAgICAgICAgICAgICAgICAgc3RhY2tlZExheW91dAogICAgICAgICAgICAgICAgICAgIGNhc2UgLnNpbmdsZToKICAgICAgICAgICAgICAgICAgICAgICAgc2luZ2xlUGFuZUxheW91dAogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIC5mcmFtZSh3aWR0aDogc2l6ZS53aWR0aCwgaGVpZ2h0OiBzaXplLmhlaWdodCkKICAgICAgICAgICAgICAgIC5hbmltYXRpb24oLnNuYXBweSwgdmFsdWU6IGxheW91dCkKICAgICAgICAgICAgICAgIC5hbmltYXRpb24oLnNuYXBweSwgdmFsdWU6IGlzVHJhbnNjcmlwdFZpc2libGUpCiAgICAgICAgICAgIH0KICAgICAgICAgICAgLm5hdmlnYXRpb25UaXRsZSgiTm93IFBsYXlpbmciKQogICAgICAgICAgICAubmF2aWdhdGlvbkJhclRpdGxlRGlzcGxheU1vZGUoLmlubGluZSkKICAgICAgICAgICAgLnRvb2xiYXIgewogICAgICAgICAgICAgICAgVG9vbGJhckl0ZW0ocGxhY2VtZW50OiAudG9wQmFyVHJhaWxpbmcpIHsKICAgICAgICAgICAgICAgICAgICBUb2dnbGUoaXNPbjogJGlzVHJhbnNjcmlwdFZpc2libGUpIHsKICAgICAgICAgICAgICAgICAgICAgICAgTGFiZWwoIlRyYW5zY3JpcHQiLCBzeXN0ZW1JbWFnZTogInRleHQucXVvdGUiKQogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAudG9nZ2xlU3R5bGUoLmJ1dHRvbikKICAgICAgICAgICAgICAgICAgICAuYWNjZXNzaWJpbGl0eUxhYmVsKCJTaG93IHRyYW5zY3JpcHQiKQogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAgICAgICAgIC5zaGVldChpc1ByZXNlbnRlZDogJHNob3dzVHJhbnNjcmlwdFNoZWV0KSB7CiAgICAgICAgICAgICAgICBOYXZpZ2F0aW9uU3RhY2sgewogICAgICAgICAgICAgICAgICAgIFRyYW5zY3JpcHRWaWV3KCkKICAgICAgICAgICAgICAgICAgICAgICAgLm5hdmlnYXRpb25UaXRsZSgiVHJhbnNjcmlwdCIpCiAgICAgICAgICAgICAgICAgICAgICAgIC5uYXZpZ2F0aW9uQmFyVGl0bGVEaXNwbGF5TW9kZSguaW5saW5lKQogICAgICAgICAgICAgICAgICAgICAgICAudG9vbGJhciB7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICBUb29sYmFySXRlbShwbGFjZW1lbnQ6IC5jb25maXJtYXRpb25BY3Rpb24pIHsKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBCdXR0b24oIkRvbmUiKSB7IHNob3dzVHJhbnNjcmlwdFNoZWV0ID0gZmFsc2UgfQogICAgICAgICAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAucHJlc2VudGF0aW9uRGV0ZW50cyhbLm1lZGl1bSwgLmxhcmdlXSkKICAgICAgICAgICAgICAgIC5wcmVzZW50YXRpb25EcmFnSW5kaWNhdG9yKC52aXNpYmxlKQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQoKICAgIC8vIE1BUks6IExheW91dCByZXNvbHV0aW9uCgogICAgcHJpdmF0ZSBlbnVtIExheW91dDogRXF1YXRhYmxlIHsKICAgICAgICAvLy8gUGxheWVyIG9uIHRoZSBsZWZ0IHBhbmUsIHRyYW5zY3JpcHQgb24gdGhlIHJpZ2h0IHBhbmUuCiAgICAgICAgY2FzZSB0d29QYW5lCiAgICAgICAgLy8vIFBsYXllciBvbiB0b3AsIHRyYW5zY3JpcHQgdW5kZXJuZWF0aCAocG9ydHJhaXQsIG5hcnJvdywgdGFsbCkuCiAgICAgICAgY2FzZSBzdGFja2VkCiAgICAgICAgLy8vIFBsYXllciBvbmx5OyB0cmFuc2NyaXB0IGFjY2Vzc2libGUgdmlhIGEgc2hlZXQuCiAgICAgICAgY2FzZSBzaW5nbGUKICAgIH0KCiAgICBwcml2YXRlIGZ1bmMgcmVzb2x2ZWRMYXlvdXQoZm9yIHNpemU6IENHU2l6ZSkgLT4gTGF5b3V0IHsKICAgICAgICBndWFyZCBpc1RyYW5zY3JpcHRWaXNpYmxlIGVsc2UgeyByZXR1cm4gLnNpbmdsZSB9CgogICAgICAgIGxldCBpc1dpZGVFbm91Z2ggPSBzaXplLndpZHRoID49IHR3b1BhbmVNaW5pbXVtV2lkdGgKICAgICAgICBsZXQgaXNSZWd1bGFyV2lkdGggPSBob3Jpem9udGFsU2l6ZUNsYXNzID09IC5yZWd1bGFyCgogICAgICAgIGlmIGlzUmVndWxhcldpZHRoICYmIGlzV2lkZUVub3VnaCB7CiAgICAgICAgICAgIHJldHVybiAudHdvUGFuZQogICAgICAgIH0KCiAgICAgICAgLy8gQ29tcGFjdCB3aWR0aCAoY2xvc2VkIGRldmljZSAvIG5hcnJvdyB3aW5kb3cpLiBPbmx5IHN0YWNrIHdoZW4gdGhlCiAgICAgICAgLy8gdmlldyBpcyB0YWxsIGVub3VnaCB0byBnaXZlIGJvdGggaGFsdmVzIG1lYW5pbmdmdWwgc3BhY2UuCiAgICAgICAgaWYgc2l6ZS5oZWlnaHQgPj0gNzAwICYmIHZlcnRpY2FsU2l6ZUNsYXNzID09IC5yZWd1bGFyIHsKICAgICAgICAgICAgcmV0dXJuIC5zdGFja2VkCiAgICAgICAgfQoKICAgICAgICByZXR1cm4gLnNpbmdsZQogICAgfQoKICAgIC8vIE1BUks6IFR3byBwYW5lICh1bmZvbGRlZCkKCiAgICBAVmlld0J1aWxkZXIKICAgIHByaXZhdGUgZnVuYyB0d29QYW5lTGF5b3V0KHdpZHRoOiBDR0Zsb2F0KSAtPiBzb21lIFZpZXcgewogICAgICAgIC8vIEVhY2ggcGFuZSBnZXRzIGV4YWN0bHkgaGFsZiB0aGUgd2lkdGg7IHRoZSBjZW50cmUgZ3V0dGVyIGlzIGNhcnZlZAogICAgICAgIC8vIG91dCBvZiBlYWNoIHBhbmUncyBpbm5lciBlZGdlIHNvIGNvbnRlbnQgbmV2ZXIgY3Jvc3NlcyB0aGUgbWlkZGxlLgogICAgICAgIEhTdGFjayhzcGFjaW5nOiAwKSB7CiAgICAgICAgICAgIFBsYXllclZpZXcoKQogICAgICAgICAgICAgICAgLmZyYW1lKG1heFdpZHRoOiAuaW5maW5pdHksIG1heEhlaWdodDogLmluZmluaXR5KQogICAgICAgICAgICAgICAgLnBhZGRpbmcoLnRyYWlsaW5nLCBjZW50cmVHdXR0ZXIgLyAyKQogICAgICAgICAgICAgICAgLmNvbnRhaW5lclJlbGF0aXZlRnJhbWUoLmhvcml6b250YWwsIGNvdW50OiAyLCBzcGFuOiAxLCBzcGFjaW5nOiAwKQoKICAgICAgICAgICAgVHJhbnNjcmlwdFZpZXcoKQogICAgICAgICAgICAgICAgLmZyYW1lKG1heFdpZHRoOiAuaW5maW5pdHksIG1heEhlaWdodDogLmluZmluaXR5KQogICAgICAgICAgICAgICAgLnBhZGRpbmcoLmxlYWRpbmcsIGNlbnRyZUd1dHRlciAvIDIpCiAgICAgICAgICAgICAgICAuY29udGFpbmVyUmVsYXRpdmVGcmFtZSguaG9yaXpvbnRhbCwgY291bnQ6IDIsIHNwYW46IDEsIHNwYWNpbmc6IDApCiAgICAgICAgfQogICAgICAgIC5mcmFtZSh3aWR0aDogd2lkdGgpCiAgICB9CgogICAgLy8gTUFSSzogU3RhY2tlZCAoY2xvc2VkLCB0YWxsKQoKICAgIHByaXZhdGUgdmFyIHN0YWNrZWRMYXlvdXQ6IHNvbWUgVmlldyB7CiAgICAgICAgVlN0YWNrKHNwYWNpbmc6IDApIHsKICAgICAgICAgICAgUGxheWVyVmlldygpCiAgICAgICAgICAgICAgICAuZnJhbWUobWF4V2lkdGg6IC5pbmZpbml0eSkKICAgICAgICAgICAgICAgIC5sYXlvdXRQcmlvcml0eSgxKQoKICAgICAgICAgICAgRGl2aWRlcigpCgogICAgICAgICAgICBUcmFuc2NyaXB0VmlldygpCiAgICAgICAgICAgICAgICAuZnJhbWUobWF4V2lkdGg6IC5pbmZpbml0eSwgbWF4SGVpZ2h0OiAuaW5maW5pdHkpCiAgICAgICAgfQogICAgfQoKICAgIC8vIE1BUks6IFNpbmdsZSAoY2xvc2VkLCBzaG9ydCwgb3IgdHJhbnNjcmlwdCBoaWRkZW4pCgogICAgcHJpdmF0ZSB2YXIgc2luZ2xlUGFuZUxheW91dDogc29tZSBWaWV3IHsKICAgICAgICBQbGF5ZXJWaWV3KCkKICAgICAgICAgICAgLmZyYW1lKG1heFdpZHRoOiAuaW5maW5pdHksIG1heEhlaWdodDogLmluZmluaXR5KQogICAgICAgICAgICAuc2FmZUFyZWFJbnNldChlZGdlOiAuYm90dG9tKSB7CiAgICAgICAgICAgICAgICBpZiBpc1RyYW5zY3JpcHRWaXNpYmxlIHsKICAgICAgICAgICAgICAgICAgICBCdXR0b24gewogICAgICAgICAgICAgICAgICAgICAgICBzaG93c1RyYW5zY3JpcHRTaGVldCA9IHRydWUKICAgICAgICAgICAgICAgICAgICB9IGxhYmVsOiB7CiAgICAgICAgICAgICAgICAgICAgICAgIExhYmVsKCJTaG93IFRyYW5zY3JpcHQiLCBzeXN0ZW1JbWFnZTogInRleHQucXVvdGUiKQogICAgICAgICAgICAgICAgICAgICAgICAgICAgLmZyYW1lKG1heFdpZHRoOiAuaW5maW5pdHkpCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIC5idXR0b25TdHlsZSguYm9yZGVyZWQpCiAgICAgICAgICAgICAgICAgICAgLnBhZGRpbmcoKQogICAgICAgICAgICAgICAgICAgIC5iYWNrZ3JvdW5kKC5iYXIpCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgIH0KICAgIH0KfQoKI1ByZXZpZXcoIk5vdyBQbGF5aW5nIikgewogICAgTm93UGxheWluZ1ZpZXcoKQp9Cg=="}], "grading": {"expectations": [{"text": "uses ArrangementView with primary/secondary closure", "passed": false, "evidence": "not found"}, {"text": "sets .arrangementViewStyle(.split\u2026)", "passed": false, "evidence": "not found"}, {"text": "arrangement is inside NavigationStack (not the reverse)", "passed": false, "evidence": "not found"}, {"text": "no navigation container inside ArrangementView", "passed": true, "evidence": ""}, {"text": "no HStack used for the two panes", "passed": true, "evidence": ""}, {"text": "does not use UIScreen.main or orientation checks", "passed": true, "evidence": ""}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "summary": {"passed": 4, "total": 7, "pass_rate": 0.5714285714285714}}}, {"id": "eval-1-toolbar-mail-style-actions-with_skill-run-1", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "MessageListViewController+Toolbar.swift", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,Ly8KLy8gIE1lc3NhZ2VMaXN0Vmlld0NvbnRyb2xsZXIrVG9vbGJhci5zd2lmdAovLwovLyAgVG9vbGJhciAvIG5hdmlnYXRpb24tYmFyIGNvbmZpZ3VyYXRpb24gZm9yIHRoZSBtZXNzYWdlIGxpc3QuCi8vICBUYXJnZXRzIHRoZSBpT1MgMjcuMSBTREsgc28gdGhlIHN5c3RlbSBjYW4gcmVsb2NhdGUgdGhlc2UgaXRlbXMgb250bwovLyAgaVBob25lIER1bydzIHZlcnRpY2FsIGJhciAob3V0ZXIgZGlzcGxheSBpbiBldmVyeSBvcmllbnRhdGlvbiwgaW5uZXIKLy8gIGRpc3BsYXkgaW4gbGFuZHNjYXBlKS4gTm90aGluZyBoZXJlIGJ1aWxkcyBpdHMgb3duIFVJVG9vbGJhciBvcgovLyAgVUlOYXZpZ2F0aW9uQmFyOiBhbGwgaXRlbXMgYXJlIHNldCBvbiBgbmF2aWdhdGlvbkl0ZW1gIC8gYHRvb2xiYXJJdGVtc2AKLy8gIGFuZCBvd25lZCBieSB0aGUgZW5jbG9zaW5nIFVJTmF2aWdhdGlvbkNvbnRyb2xsZXIgKyBVSVRhYkJhckNvbnRyb2xsZXIsCi8vICB3aGljaCBpcyB0aGUgb25seSB3YXkgdGhleSBhcmUgY29uc2lkZXJlZCBmb3IgdGhlIHZlcnRpY2FsIGJhci4KLy8KLy8gIENvbnRyYWN0IHdpdGggdGhlIG1haW4gY2xhc3MgKGRlY2xhcmVkIGluIE1lc3NhZ2VMaXN0Vmlld0NvbnRyb2xsZXIuc3dpZnQpOgovLwovLyAgICAgIHZhciBpc1NlbGVjdGluZzogQm9vbCAgICAgICAgICAgIC8vIG11bHRpLXNlbGVjdCBtb2RlIG9uL29mZgovLyAgICAgIHZhciBpbmJveFVucmVhZENvdW50OiBJbnQgICAgICAgIC8vIGRyaXZlcyB0aGUgSW5ib3ggYmFkZ2UKLy8gICAgICBmdW5jIHByZXNlbnRDb21wb3NlKCkKLy8gICAgICBmdW5jIHByZXNlbnRGaWx0ZXJPcHRpb25zKCkKLy8gICAgICBmdW5jIHNob3dJbmJveCgpCi8vICAgICAgZnVuYyBzZXRTZWxlY3RpbmcoXyBzZWxlY3Rpbmc6IEJvb2wsIGFuaW1hdGVkOiBCb29sKQovLyAgICAgIGZ1bmMgYXJjaGl2ZUFsbE1lc3NhZ2VzKCkKLy8gICAgICBmdW5jIG1hcmtBbGxNZXNzYWdlc1JlYWQoKQovLyAgICAgIGZ1bmMgcHJlc2VudFNldHRpbmdzKCkKLy8KCmltcG9ydCBVSUtpdAoKZXh0ZW5zaW9uIE1lc3NhZ2VMaXN0Vmlld0NvbnRyb2xsZXIgewoKICAgIC8vIE1BUks6IC0gSXRlbSBpZGVudGl0eQoKICAgIC8vLyBUYWdzIHVzZWQgdG8gbG9vayBpdGVtcyB1cCBhZ2FpbiBhZnRlciB0aGV5IGhhdmUgYmVlbiBoYW5kZWQgdG8gdGhlCiAgICAvLy8gc3lzdGVtIChhbiBleHRlbnNpb24gY2Fubm90IGFkZCBzdG9yZWQgcHJvcGVydGllcykuCiAgICBwcml2YXRlIGVudW0gVG9vbGJhclRhZzogSW50IHsKICAgICAgICBjYXNlIGNvbXBvc2UgPSAxCiAgICAgICAgY2FzZSBmaWx0ZXIKICAgICAgICBjYXNlIGluYm94CiAgICAgICAgY2FzZSBzZWxlY3RPckRvbmUKICAgIH0KCiAgICAvLyBNQVJLOiAtIFNldHVwCgogICAgLy8vIENhbGwgb25jZSBmcm9tIGB2aWV3RGlkTG9hZCgpYC4KICAgIGZ1bmMgY29uZmlndXJlVG9vbGJhckl0ZW1zKCkgewogICAgICAgIG5hdmlnYXRpb25Db250cm9sbGVyPy5zZXRUb29sYmFySGlkZGVuKGZhbHNlLCBhbmltYXRlZDogZmFsc2UpCgogICAgICAgIC8vIC0tLS0gVG9wIGJhciAobmF2aWdhdGlvbiBpdGVtKSAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQogICAgICAgIC8vCiAgICAgICAgLy8gQmFjayBpcyBhZGRlZCBieSBVSU5hdmlnYXRpb25Db250cm9sbGVyIGFuZCBhbHdheXMgc2l0cyBhdCB0aGUgdG9wCiAgICAgICAgLy8gb2YgdGhlIHZlcnRpY2FsIHN0cmlwLiBUaGUgU2VsZWN0L0RvbmUgdG9nZ2xlIGlzIHRoZSBzY3JlZW4ncwogICAgICAgIC8vIHByb21pbmVudCBhY3Rpb24sIHNvIGl0IGxpdmVzIGluIGBwaW5uZWRUcmFpbGluZ0dyb3VwYCwgZGlyZWN0bHkKICAgICAgICAvLyB1bmRlciBCYWNrIGluIHRoZSBzdHJpcC4gSXQgaXMgdGV4dC1vbmx5IGFuZCBzd2FwcyBpdHMgbGFiZWwsIHNvIGl0CiAgICAgICAgLy8gaXMgZm9yY2VkIGAuaG9yaXpvbnRhbE9ubHlgOiBzeW1ib2zih4R0ZXh0IGl0ZW1zIG11c3Qgbm90IGNoYW5nZSBheGlzCiAgICAgICAgLy8gYmV0d2VlbiBwb3NlcywgYW5kIHRleHQtb25seSBpdGVtcyBzdGF5IGhvcml6b250YWwgYW55d2F5LgogICAgICAgIG5hdmlnYXRpb25JdGVtLnBpbm5lZFRyYWlsaW5nR3JvdXAgPSBVSUJhckJ1dHRvbkl0ZW1Hcm91cCgKICAgICAgICAgICAgYmFyQnV0dG9uSXRlbXM6IFttYWtlU2VsZWN0T3JEb25lSXRlbSgpXSwKICAgICAgICAgICAgcmVwcmVzZW50YXRpdmVJdGVtOiBuaWwKICAgICAgICApCgogICAgICAgIC8vIC0tLS0gQm90dG9tIHRvb2xiYXIgKG93bmVkIGJ5IFVJTmF2aWdhdGlvbkNvbnRyb2xsZXIpIC0tLS0tLS0tLS0tLS0tLQogICAgICAgIC8vCiAgICAgICAgLy8gTWFpbC1zdHlsZSBvcmRlcjogRmlsdGVyIChsZWFkaW5nKSwgSW5ib3ggc3RhdHVzIChjZW50cmUpLAogICAgICAgIC8vIENvbXBvc2UgKHRyYWlsaW5nKS4gSW4gYSB2ZXJ0aWNhbCBiYXIgdGhlIGZsZXhpYmxlIHNwYWNlcyBjb2xsYXBzZQogICAgICAgIC8vIHRvIHplcm8gc2l6ZSBhbmQgdGhlIHN5c3RlbSBzdGFja3MgdGhlIHRocmVlIGl0ZW1zIGJvdHRvbS1hbGlnbmVkOwogICAgICAgIC8vIGluIGEgaG9yaXpvbnRhbCBiYXIgdGhleSBzcHJlYWQgYXMgdXN1YWwuIE5vIG1hbnVhbCBzcGFjaW5nIGJleW9uZAogICAgICAgIC8vIHRoYXQuIEV2ZXJ5IGl0ZW0gaGFzIEJPVEggYSBzeW1ib2wgYW5kIGEgdGl0bGUsIHNvIGVhY2ggb25lIGlzCiAgICAgICAgLy8gZWxpZ2libGUgZm9yIHRoZSB2ZXJ0aWNhbCBiYXIgYW5kIGhhcyBhIGxhYmVsIGZvciB0aGUgb3ZlcmZsb3cgbWVudS4KICAgICAgICB0b29sYmFySXRlbXMgPSBbCiAgICAgICAgICAgIG1ha2VGaWx0ZXJJdGVtKCksCiAgICAgICAgICAgIC5mbGV4aWJsZVNwYWNlKCksCiAgICAgICAgICAgIG1ha2VJbmJveEl0ZW0oKSwKICAgICAgICAgICAgLmZsZXhpYmxlU3BhY2UoKSwKICAgICAgICAgICAgbWFrZUNvbXBvc2VJdGVtKCksCiAgICAgICAgXQoKICAgICAgICAvLyAtLS0tIE9uZSBvdmVyZmxvdyBtZW51IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQogICAgICAgIC8vCiAgICAgICAgLy8gSW5zdGVhZCBvZiBvdXIgb3duIGVsbGlwc2lzICJNb3JlIiBidXR0b24sIHRoZSBzZWNvbmRhcnkgYWN0aW9ucyBhcmUKICAgICAgICAvLyBmb2xkZWQgaW50byB0aGUgc3lzdGVtIG92ZXJmbG93IG1lbnUuIFRoZSBlbGxpcHNpcyBpcyByZXNlcnZlZCBmb3IgdGhlCiAgICAgICAgLy8gc3lzdGVtIG9uIGlQaG9uZTsgYSBzZWNvbmQgIm1vcmUiIG1lbnUgd291bGQgY29tcGV0ZSB3aXRoIGl0LCBhbmQKICAgICAgICAvLyBhbnl0aGluZyB0aGUgYmFyIGNhbid0IGZpdCAoRmlsdGVyLCBJbmJveCkgbGFuZHMgaW4gdGhlIHNhbWUgcGxhY2UuCiAgICAgICAgbmF2aWdhdGlvbkl0ZW0uYWRkaXRpb25hbE92ZXJmbG93SXRlbXMgPSBVSURlZmVycmVkTWVudUVsZW1lbnQgeyBbd2VhayBzZWxmXSBwcm92aWRlciBpbgogICAgICAgICAgICBwcm92aWRlcihzZWxmPy5wZXJzaXN0ZW50T3ZlcmZsb3dJdGVtcygpID8/IFtdKQogICAgICAgIH0KCiAgICAgICAgLy8gRGVmYXVsdCBjb21wcmVzc2lvbiAodG9vbGJhciBjb2xsYXBzZXMgYmVmb3JlIHRoZSB0YWIgYmFyKSBpcyBrZXB0OgogICAgICAgIC8vIHRoaXMgaXMgYSBuYXZpZ2F0aW9uLWZvY3VzZWQgc2NyZWVuIGluc2lkZSBhIFVJVGFiQmFyQ29udHJvbGxlciBhbmQKICAgICAgICAvLyB0aGUgbWFpbGJveCB0YWJzIHNob3VsZCBzdGF5IHJlYWNoYWJsZS4gQ29tcG9zZSBzdXJ2aXZlcyBjb21wcmVzc2lvbgogICAgICAgIC8vIHRocm91Z2ggaXRzIHZpc2liaWxpdHkgcHJpb3JpdHkgaW5zdGVhZC4gSWYgdGhlIHRhYiBiYXIgaXMgZXZlciB0aGUKICAgICAgICAvLyBsZXNzIGltcG9ydGFudCBvZiB0aGUgdHdvIGhlcmUsIGZsaXAgaXQgd2l0aDoKICAgICAgICAvLyAgICAgbmF2aWdhdGlvbkl0ZW0udmVydGljYWxCYXJDb21wcmVzc2lvbkJlaGF2aW9yID0gLnByZWZlcnNCYXJJdGVtcwoKICAgICAgICB1cGRhdGVJbmJveEJhZGdlKCkKICAgICAgICB1cGRhdGVTZWxlY3RPckRvbmVJdGVtKGFuaW1hdGVkOiBmYWxzZSkKICAgIH0KCiAgICAvLyBNQVJLOiAtIEl0ZW0gZmFjdG9yaWVzCgogICAgcHJpdmF0ZSBmdW5jIG1ha2VDb21wb3NlSXRlbSgpIC0+IFVJQmFyQnV0dG9uSXRlbSB7CiAgICAgICAgbGV0IGl0ZW0gPSBVSUJhckJ1dHRvbkl0ZW0oCiAgICAgICAgICAgIHRpdGxlOiBTdHJpbmcobG9jYWxpemVkOiAiQ29tcG9zZSIpLAogICAgICAgICAgICBpbWFnZTogVUlJbWFnZShzeXN0ZW1OYW1lOiAic3F1YXJlLmFuZC5wZW5jaWwiKSwKICAgICAgICAgICAgdGFyZ2V0OiBzZWxmLAogICAgICAgICAgICBhY3Rpb246ICNzZWxlY3Rvcihjb21wb3NlVGFwcGVkKQogICAgICAgICkKICAgICAgICBpdGVtLnRhZyA9IFRvb2xiYXJUYWcuY29tcG9zZS5yYXdWYWx1ZQogICAgICAgIC8vIE1vc3QgaW1wb3J0YW50IGFjdGlvbiBvbiB0aGUgc2NyZWVuOiBvdmVyZmxvd3MgbGFzdC4gSXRlbXMgb3ZlcmZsb3cKICAgICAgICAvLyBib3R0b23ihpJ0b3AgYnkgZGVmYXVsdCBhbmQgQ29tcG9zZSBpcyB0aGUgYm90dG9tLW1vc3QgaXRlbSwgc28gdGhlCiAgICAgICAgLy8gcHJpb3JpdHkgaXMgd2hhdCBrZWVwcyBpdCBvbiB0aGUgYmFyIHdoZW4gdGhlIG91dGVyIGRpc3BsYXkgcnVucwogICAgICAgIC8vIG91dCBvZiBoZWlnaHQgKGtleWJvYXJkIHVwLCBsYW5kc2NhcGUsIFBpUCBwaW5uZWQgYXQgdGhlIHRvcCkuCiAgICAgICAgaXRlbS52aXNpYmlsaXR5UHJpb3JpdHkgPSBVSUJhckJ1dHRvbkl0ZW1WaXNpYmlsaXR5UHJpb3JpdHkoaGlnaGVyVGhhbjogLmhpZ2gpCiAgICAgICAgcmV0dXJuIGl0ZW0KICAgIH0KCiAgICBwcml2YXRlIGZ1bmMgbWFrZUZpbHRlckl0ZW0oKSAtPiBVSUJhckJ1dHRvbkl0ZW0gewogICAgICAgIGxldCBpdGVtID0gVUlCYXJCdXR0b25JdGVtKAogICAgICAgICAgICB0aXRsZTogU3RyaW5nKGxvY2FsaXplZDogIkZpbHRlciIpLAogICAgICAgICAgICBpbWFnZTogVUlJbWFnZShzeXN0ZW1OYW1lOiAibGluZS4zLmhvcml6b250YWwuZGVjcmVhc2UuY2lyY2xlIiksCiAgICAgICAgICAgIHRhcmdldDogc2VsZiwKICAgICAgICAgICAgYWN0aW9uOiAjc2VsZWN0b3IoZmlsdGVyVGFwcGVkKQogICAgICAgICkKICAgICAgICBpdGVtLnRhZyA9IFRvb2xiYXJUYWcuZmlsdGVyLnJhd1ZhbHVlCiAgICAgICAgLy8gRmlyc3QgdG8gYmUgZm9sZGVkIGludG8gdGhlIG92ZXJmbG93IG1lbnU7IGl0cyB0aXRsZSBpcyB3aGF0IHNob3dzIHRoZXJlLgogICAgICAgIGl0ZW0udmlzaWJpbGl0eVByaW9yaXR5ID0gLmxvdwogICAgICAgIHJldHVybiBpdGVtCiAgICB9CgogICAgcHJpdmF0ZSBmdW5jIG1ha2VJbmJveEl0ZW0oKSAtPiBVSUJhckJ1dHRvbkl0ZW0gewogICAgICAgIC8vIFByZXZpb3VzbHkgYSB0ZXh0IGJ1dHRvbiAiSW5ib3ggKDEyKSIuIFRleHQtb25seSBpdGVtcyBhcmUgcGlubmVkIHRvCiAgICAgICAgLy8gdGhlIGhvcml6b250YWwgYmFyLCBhbmQgdGhlIG51bWJlciBvbmx5IHJlaW5mb3JjZXMgdGhlIHN5bWJvbCwgc28gaXQKICAgICAgICAvLyBiZWNvbWVzIGEgc3ltYm9sIHdpdGggYSBjb3VudCBiYWRnZSDigJQgd2hpY2ggYWxzbyBjb252ZXlzIHN0YXR1cyBhdCBhCiAgICAgICAgLy8gZ2xhbmNlIGFuZCB0aGVyZWZvcmUgc3RheXMgdmlzaWJsZSBsb25nZXIgdGhhbiBGaWx0ZXIuCiAgICAgICAgbGV0IGl0ZW0gPSBVSUJhckJ1dHRvbkl0ZW0oCiAgICAgICAgICAgIHRpdGxlOiBTdHJpbmcobG9jYWxpemVkOiAiSW5ib3giKSwKICAgICAgICAgICAgaW1hZ2U6IFVJSW1hZ2Uoc3lzdGVtTmFtZTogInRyYXkiKSwKICAgICAgICAgICAgdGFyZ2V0OiBzZWxmLAogICAgICAgICAgICBhY3Rpb246ICNzZWxlY3RvcihpbmJveFRhcHBlZCkKICAgICAgICApCiAgICAgICAgaXRlbS50YWcgPSBUb29sYmFyVGFnLmluYm94LnJhd1ZhbHVlCiAgICAgICAgaXRlbS52aXNpYmlsaXR5UHJpb3JpdHkgPSAuaGlnaAogICAgICAgIHJldHVybiBpdGVtCiAgICB9CgogICAgcHJpdmF0ZSBmdW5jIG1ha2VTZWxlY3RPckRvbmVJdGVtKCkgLT4gVUlCYXJCdXR0b25JdGVtIHsKICAgICAgICBsZXQgaXRlbSA9IFVJQmFyQnV0dG9uSXRlbSgKICAgICAgICAgICAgdGl0bGU6IFN0cmluZyhsb2NhbGl6ZWQ6ICJTZWxlY3QiKSwKICAgICAgICAgICAgc3R5bGU6IC5wbGFpbiwKICAgICAgICAgICAgdGFyZ2V0OiBzZWxmLAogICAgICAgICAgICBhY3Rpb246ICNzZWxlY3RvcihzZWxlY3RPckRvbmVUYXBwZWQpCiAgICAgICAgKQogICAgICAgIGl0ZW0udGFnID0gVG9vbGJhclRhZy5zZWxlY3RPckRvbmUucmF3VmFsdWUKICAgICAgICAvLyBDdXN0b20gU2VsZWN0IOKHhCBEb25lIHRvZ2dsZToga2VlcCBpdCBvbiB0aGUgaG9yaXpvbnRhbCBheGlzIGluIGV2ZXJ5CiAgICAgICAgLy8gcG9zZSBzbyB0aGUgcGFpciBuZXZlciBzdHJhZGRsZXMgdHdvIGJhcnMuCiAgICAgICAgaXRlbS5heGlzQmVoYXZpb3IgPSAuaG9yaXpvbnRhbE9ubHkKICAgICAgICAvLyBQcm9taW5lbnQgYWN0aW9uOiBtdXN0IG5vdCBkaXNhcHBlYXIgd2hlbiB0aGUgYmFyIGNvbXByZXNzZXMuCiAgICAgICAgaXRlbS52aXNpYmlsaXR5UHJpb3JpdHkgPSAuaGlnaAogICAgICAgIHJldHVybiBpdGVtCiAgICB9CgogICAgLy8gTUFSSzogLSBPdmVyZmxvdyBtZW51IGNvbnRlbnRzICgiTW9yZSIpCgogICAgLy8vIFRoZSBhY3Rpb25zIHRoYXQgdXNlZCB0byBsaXZlIHVuZGVyIGEgY3VzdG9tICJNb3JlIiBlbGxpcHNpcyBidXR0b24uCiAgICBwcml2YXRlIGZ1bmMgcGVyc2lzdGVudE92ZXJmbG93SXRlbXMoKSAtPiBbVUlNZW51RWxlbWVudF0gewogICAgICAgIFsKICAgICAgICAgICAgVUlBY3Rpb24oCiAgICAgICAgICAgICAgICB0aXRsZTogU3RyaW5nKGxvY2FsaXplZDogIkFyY2hpdmUgQWxsIiksCiAgICAgICAgICAgICAgICBpbWFnZTogVUlJbWFnZShzeXN0ZW1OYW1lOiAiYXJjaGl2ZWJveCIpCiAgICAgICAgICAgICkgeyBbd2VhayBzZWxmXSBfIGluIHNlbGY/LmFyY2hpdmVBbGxNZXNzYWdlcygpIH0sCgogICAgICAgICAgICBVSUFjdGlvbigKICAgICAgICAgICAgICAgIHRpdGxlOiBTdHJpbmcobG9jYWxpemVkOiAiTWFyayBBbGwgYXMgUmVhZCIpLAogICAgICAgICAgICAgICAgaW1hZ2U6IFVJSW1hZ2Uoc3lzdGVtTmFtZTogImVudmVsb3BlLm9wZW4iKQogICAgICAgICAgICApIHsgW3dlYWsgc2VsZl0gXyBpbiBzZWxmPy5tYXJrQWxsTWVzc2FnZXNSZWFkKCkgfSwKCiAgICAgICAgICAgIFVJTWVudShvcHRpb25zOiAuZGlzcGxheUlubGluZSwgY2hpbGRyZW46IFsKICAgICAgICAgICAgICAgIFVJQWN0aW9uKAogICAgICAgICAgICAgICAgICAgIHRpdGxlOiBTdHJpbmcobG9jYWxpemVkOiAiU2V0dGluZ3MiKSwKICAgICAgICAgICAgICAgICAgICBpbWFnZTogVUlJbWFnZShzeXN0ZW1OYW1lOiAiZ2VhciIpCiAgICAgICAgICAgICAgICApIHsgW3dlYWsgc2VsZl0gXyBpbiBzZWxmPy5wcmVzZW50U2V0dGluZ3MoKSB9LAogICAgICAgICAgICBdKSwKICAgICAgICBdCiAgICB9CgogICAgLy8gTUFSSzogLSBTdGF0ZSB1cGRhdGVzCgogICAgLy8vIENhbGwgd2hlbmV2ZXIgYGluYm94VW5yZWFkQ291bnRgIGNoYW5nZXMuCiAgICBmdW5jIHVwZGF0ZUluYm94QmFkZ2UoKSB7CiAgICAgICAgZ3VhcmQgbGV0IGl0ZW0gPSB0b29sYmFySXRlbSguaW5ib3gpIGVsc2UgeyByZXR1cm4gfQogICAgICAgIGl0ZW0uYmFkZ2UgPSBpbmJveFVucmVhZENvdW50ID4gMCA/IC5jb3VudChpbmJveFVucmVhZENvdW50KSA6IG5pbAogICAgICAgIGl0ZW0uYWNjZXNzaWJpbGl0eVZhbHVlID0gaW5ib3hVbnJlYWRDb3VudCA+IDAKICAgICAgICAgICAgPyBTdHJpbmcobG9jYWxpemVkOiAiXChpbmJveFVucmVhZENvdW50KSB1bnJlYWQiKQogICAgICAgICAgICA6IG5pbAogICAgfQoKICAgIC8vLyBDYWxsIHdoZW5ldmVyIGBpc1NlbGVjdGluZ2AgY2hhbmdlcy4KICAgIGZ1bmMgdXBkYXRlU2VsZWN0T3JEb25lSXRlbShhbmltYXRlZDogQm9vbCkgewogICAgICAgIGd1YXJkIGxldCBpdGVtID0gbmF2aWdhdGlvbkl0ZW0ucGlubmVkVHJhaWxpbmdHcm91cD8uYmFyQnV0dG9uSXRlbXMKICAgICAgICAgICAgLmZpcnN0KHdoZXJlOiB7ICQwLnRhZyA9PSBUb29sYmFyVGFnLnNlbGVjdE9yRG9uZS5yYXdWYWx1ZSB9KSBlbHNlIHsgcmV0dXJuIH0KCiAgICAgICAgaXRlbS50aXRsZSA9IGlzU2VsZWN0aW5nID8gU3RyaW5nKGxvY2FsaXplZDogIkRvbmUiKSA6IFN0cmluZyhsb2NhbGl6ZWQ6ICJTZWxlY3QiKQogICAgICAgIGl0ZW0uc3R5bGUgPSBpc1NlbGVjdGluZyA/IC5kb25lIDogLnBsYWluCgogICAgICAgIC8vIFdoaWxlIHNlbGVjdGluZywgQ29tcG9zZSBhbmQgRmlsdGVyIGRvbid0IGFwcGx5IHRvIHRoZSBzZWxlY3Rpb247CiAgICAgICAgLy8gaGlkZSB0aGVtIHJhdGhlciB0aGFuIGxldHRpbmcgdGhlbSBjb21wZXRlIGZvciB0aGUgc3RyaXAuCiAgICAgICAgdG9vbGJhckl0ZW0oLmNvbXBvc2UpPy5pc0hpZGRlbiA9IGlzU2VsZWN0aW5nCiAgICAgICAgdG9vbGJhckl0ZW0oLmZpbHRlcik/LmlzSGlkZGVuID0gaXNTZWxlY3RpbmcKICAgIH0KCiAgICBwcml2YXRlIGZ1bmMgdG9vbGJhckl0ZW0oXyB0YWc6IFRvb2xiYXJUYWcpIC0+IFVJQmFyQnV0dG9uSXRlbT8gewogICAgICAgIHRvb2xiYXJJdGVtcz8uZmlyc3QgeyAkMC50YWcgPT0gdGFnLnJhd1ZhbHVlIH0KICAgIH0KCiAgICAvLyBNQVJLOiAtIEFjdGlvbnMKCiAgICBAb2JqYyBwcml2YXRlIGZ1bmMgY29tcG9zZVRhcHBlZCgpIHsKICAgICAgICBwcmVzZW50Q29tcG9zZSgpCiAgICB9CgogICAgQG9iamMgcHJpdmF0ZSBmdW5jIGZpbHRlclRhcHBlZCgpIHsKICAgICAgICBwcmVzZW50RmlsdGVyT3B0aW9ucygpCiAgICB9CgogICAgQG9iamMgcHJpdmF0ZSBmdW5jIGluYm94VGFwcGVkKCkgewogICAgICAgIHNob3dJbmJveCgpCiAgICB9CgogICAgQG9iamMgcHJpdmF0ZSBmdW5jIHNlbGVjdE9yRG9uZVRhcHBlZCgpIHsKICAgICAgICBzZXRTZWxlY3RpbmcoIWlzU2VsZWN0aW5nLCBhbmltYXRlZDogdHJ1ZSkKICAgICAgICB1cGRhdGVTZWxlY3RPckRvbmVJdGVtKGFuaW1hdGVkOiB0cnVlKQogICAgfQp9Cg=="}, {"name": "NOTES.md", "type": "text", "content": "# Notes: MessageListViewController+Toolbar.swift\n\nChoices, mapped to the iPhone Duo vertical-bar guidance (iOS 27.1 SDK).\n\n## Use the system's bars, not a custom UIToolbar\nAll items are set on `navigationItem` and `toolbarItems`; the enclosing\n`UINavigationController` / `UITabBarController` own the bars. Only system-managed\nitems are relocated to the vertical strip.\n\n## Order in the strip\nTop to bottom: Back (automatic) \u2192 Select/Done (`pinnedTrailingGroup`, the screen's\nprominent action) \u2192 bottom-bar items (Filter, Inbox, Compose) \u2192 tab bar. The bottom\ntoolbar keeps Mail's Filter / status / Compose order; the flexible spaces are\nzero-size in a vertical bar, so they only matter for the horizontal layout and no\nmanual spacing is added.\n\n## Symbol + title on every item\nCompose, Filter and Inbox all get `title` *and* `image`, which makes them eligible\nfor the vertical bar and gives the overflow menu a label to show.\n\n## \"Inbox (12)\" becomes a badge\nA text-only button would be pinned to the horizontal bar. The count only reinforces\nthe symbol, so it is now `tray` + `badge = .count(n)`; the count is also exposed as\n`accessibilityValue`. Badged status items are given `.high` priority so they stay\nvisible longer than Filter.\n\n## Select \u21c4 Done stays horizontal\nIt is a custom text toggle, so `axisBehavior = .horizontalOnly` \u2014 related items\nmust not change axis between poses. It also has `.high` visibility priority so Done\nnever disappears mid-selection. While selecting, Compose and Filter are hidden\nbecause they don't act on the selection.\n\n## One overflow menu, no custom ellipsis\nArchive All / Mark All as Read / Settings are provided through\n`navigationItem.additionalOverflowItems` (a `UIDeferredMenuElement`) instead of a\n\"More\" ellipsis button. The ellipsis is reserved for the system overflow on iPhone,\nand folding our actions in means everything that gets compressed off the bar ends\nup in the same menu.\n\n## Priorities\n- Compose: `UIBarButtonItemVisibilityPriority(higherThan: .high)` \u2014 most important, overflows last.\n- Inbox, Select/Done: `.high`.\n- Filter: `.low` \u2014 first into the overflow menu.\n\n## Compression\nDefault left as-is (toolbar compresses before the tab bar) because this is a\nnavigation-focused screen inside a tab bar controller; Compose survives via its\npriority. `verticalBarCompressionBehavior = .prefersBarItems` is noted in code as\nthe switch if actions should win over tabs.\n\n## Not done\n- No `preferredVerticalBarBehavior = .disabled` \u2014 a list screen is exactly the case\n  the vertical bar is for.\n- Availability: written against a 27.1 deployment target, so no `#available`\n  guards. Add them around `axisBehavior`, `visibilityPriority`,\n  `additionalOverflowItems` (iOS 27) and `badge` (iOS 26) if the target is lower.\n- The extension assumes a small contract on the main class (state properties and\n  action methods), listed at the top of the file.\n"}], "grading": {"expectations": [{"text": "no custom UIToolbar instantiated", "passed": true, "evidence": ""}, {"text": "items configured via navigationItem groups or pinnedTrailingGroup", "passed": true, "evidence": "navigationItem.pinnedTrailingGroup"}, {"text": "Select/Done item uses axisBehavior = .horizontalOnly", "passed": true, "evidence": "axisBehavior = .horizontalOnly"}, {"text": "Inbox count uses badge = .count(\u2026)", "passed": true, "evidence": ".badge = inboxUnreadCount > 0 ? .count("}, {"text": "More menu merged into additionalOverflowItems", "passed": true, "evidence": "additionalOverflowItems ="}, {"text": "Compose has visibilityPriority = .high", "passed": true, "evidence": "visibilityPriority = .high"}, {"text": "every UIBarButtonItem has both title and image", "passed": true, "evidence": ""}, {"text": "does not put ellipsis on a non-overflow menu", "passed": true, "evidence": ""}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "summary": {"passed": 9, "total": 9, "pass_rate": 1.0}}}, {"id": "eval-1-toolbar-mail-style-actions-without_skill-run-1", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "MessageListViewController+Toolbar.swift", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,Ly8KLy8gIE1lc3NhZ2VMaXN0Vmlld0NvbnRyb2xsZXIrVG9vbGJhci5zd2lmdAovLwovLyAgVG9vbGJhciAvIG5hdmlnYXRpb24tYmFyIGFjdGlvbiBjb25maWd1cmF0aW9uIGZvciB0aGUgbWVzc2FnZSBsaXN0IHNjcmVlbi4KLy8gIFRhcmdldHMgaU9TIDI3LjEuIERlc2lnbmVkIHRvIHJlYWQgY29ycmVjdGx5IGJvdGggaW4gdGhlIGNsYXNzaWMgaG9yaXpvbnRhbAovLyAgYmFycyBhbmQgaW4gdGhlIG5hcnJvdyB2ZXJ0aWNhbCBiYXJzIHVzZWQgb24gaVBob25lIER1bywgYnk6Ci8vICAgICogdXNpbmcgU0YgU3ltYm9scyAobm8gbG9uZyB0ZXh0KSBmb3IgZXZlcnkgaXRlbSBzbyB0aGV5IHN0YWNrIGNsZWFubHksCi8vICAgICogZXhwb3NpbmcgdGhlIGluYm94IGNvdW50IGFzIGEgY29tcGFjdCBiYWRnZS1zdHlsZSBwaWxsIHJhdGhlciB0aGFuIGFuCi8vICAgICAgIkluYm94ICgxMikiIHRleHQgYnV0dG9uLAovLyAgICAqIGNvbGxhcHNpbmcgc2Vjb25kYXJ5IGFjdGlvbnMgaW50byBhIHNpbmdsZSAiTW9yZSIgVUlNZW51LCBhbmQKLy8gICAgKiByZS1sYXlpbmcgaXRlbXMgb3V0IHdoZW5ldmVyIHRoZSBzaXplIGNsYXNzIC8gbGF5b3V0IGRpcmVjdGlvbiBjaGFuZ2VzLgovLwoKaW1wb3J0IFVJS2l0CgovLyBNQVJLOiAtIEFjdGlvbnMgdGhlIGhvc3QgY29udHJvbGxlciBtdXN0IHByb3ZpZGUKCi8vLyBUaGUgaG9zdCBgTWVzc2FnZUxpc3RWaWV3Q29udHJvbGxlcmAgaXMgZXhwZWN0ZWQgdG8gaW1wbGVtZW50IHRoZXNlLgovLy8gVGhleSBhcmUgZGVjbGFyZWQgYXMgYSBwcm90b2NvbCBzbyB0aGlzIGV4dGVuc2lvbiBjb21waWxlcyBzdGFuZC1hbG9uZSBhbmQKLy8vIHRoZSByZWFsIGNvbnRyb2xsZXIgY2FuIHNhdGlzZnkgdGhlbSBob3dldmVyIGl0IGxpa2VzLgpwcm90b2NvbCBNZXNzYWdlTGlzdFRvb2xiYXJBY3Rpb25zOiBBbnlPYmplY3QgewogICAgdmFyIHVucmVhZENvdW50OiBJbnQgeyBnZXQgfQogICAgdmFyIGlzRmlsdGVyQWN0aXZlOiBCb29sIHsgZ2V0IH0KICAgIHZhciBpc1NlbGVjdGluZzogQm9vbCB7IGdldCB9CgogICAgZnVuYyBjb21wb3NlKCkKICAgIGZ1bmMgdG9nZ2xlRmlsdGVyKCkKICAgIGZ1bmMgc2V0U2VsZWN0aW5nKF8gc2VsZWN0aW5nOiBCb29sKQogICAgZnVuYyBhcmNoaXZlU2VsZWN0aW9uT3JBbGwoKQogICAgZnVuYyBtYXJrQWxsQXNSZWFkKCkKICAgIGZ1bmMgc2hvd1NldHRpbmdzKCkKICAgIGZ1bmMgc2hvd0luYm94KCkKfQoKLy8gTUFSSzogLSBUb29sYmFyIGNvbmZpZ3VyYXRpb24KCmV4dGVuc2lvbiBNZXNzYWdlTGlzdFZpZXdDb250cm9sbGVyIHsKCiAgICAvLyBBY2Nlc3NpYmlsaXR5IGlkZW50aWZpZXJzIHNvIFVJIHRlc3RzIC8gUUEgdG9vbGluZyBjYW4gZmluZCB0aGUgaXRlbXMuCiAgICBlbnVtIFRvb2xiYXJJRCB7CiAgICAgICAgc3RhdGljIGxldCBjb21wb3NlICA9ICJtZXNzYWdlTGlzdC5jb21wb3NlIgogICAgICAgIHN0YXRpYyBsZXQgZmlsdGVyICAgPSAibWVzc2FnZUxpc3QuZmlsdGVyIgogICAgICAgIHN0YXRpYyBsZXQgc2VsZWN0ICAgPSAibWVzc2FnZUxpc3Quc2VsZWN0IgogICAgICAgIHN0YXRpYyBsZXQgaW5ib3ggICAgPSAibWVzc2FnZUxpc3QuaW5ib3hDb3VudCIKICAgICAgICBzdGF0aWMgbGV0IG1vcmUgICAgID0gIm1lc3NhZ2VMaXN0Lm1vcmUiCiAgICB9CgogICAgLy8vIENhbGwgb25jZSBmcm9tIGB2aWV3RGlkTG9hZCgpYC4KICAgIGZ1bmMgY29uZmlndXJlVG9vbGJhckl0ZW1zKCkgewogICAgICAgIGJ1aWxkQmFyQnV0dG9uSXRlbXMoKQogICAgICAgIGFwcGx5VG9vbGJhckxheW91dCgpCgogICAgICAgIC8vIFJlLXJ1biBsYXlvdXQgd2hlbiB0aGUgYmFycyBmbGlwIGJldHdlZW4gaG9yaXpvbnRhbCBhbmQgdmVydGljYWwKICAgICAgICAvLyAoaVBob25lIER1bykgb3Igd2hlbiB0aGUgc2l6ZSBjbGFzcyBjaGFuZ2VzLgogICAgICAgIHJlZ2lzdGVyRm9yVHJhaXRDaGFuZ2VzKAogICAgICAgICAgICBbVUlUcmFpdEhvcml6b250YWxTaXplQ2xhc3Muc2VsZiwKICAgICAgICAgICAgIFVJVHJhaXRWZXJ0aWNhbFNpemVDbGFzcy5zZWxmLAogICAgICAgICAgICAgVUlUcmFpdExheW91dERpcmVjdGlvbi5zZWxmXQogICAgICAgICkgeyAoc2VsZjogU2VsZiwgXzogVUlUcmFpdENvbGxlY3Rpb24pIGluCiAgICAgICAgICAgIHNlbGYuYXBwbHlUb29sYmFyTGF5b3V0KCkKICAgICAgICB9CiAgICB9CgogICAgLy8vIENhbGwgd2hlbmV2ZXIgYHVucmVhZENvdW50YCwgYGlzRmlsdGVyQWN0aXZlYCwgb3IgYGlzU2VsZWN0aW5nYCBjaGFuZ2VzLgogICAgZnVuYyByZWZyZXNoVG9vbGJhclN0YXRlKCkgewogICAgICAgIHVwZGF0ZUluYm94Q291bnQoKQogICAgICAgIHVwZGF0ZUZpbHRlclN0YXRlKCkKICAgICAgICB1cGRhdGVTZWxlY3RTdGF0ZSgpCiAgICB9CgogICAgLy8gTUFSSzogSXRlbSBjb25zdHJ1Y3Rpb24KCiAgICBwcml2YXRlIGZ1bmMgYnVpbGRCYXJCdXR0b25JdGVtcygpIHsKICAgICAgICAvLyBDb21wb3NlIOKAlCBwcmltYXJ5IGFjdGlvbi4gYC5jb21wb3NlYCBzeXN0ZW0gaXRlbSBnaXZlcyB0aGUgcGxhdGZvcm0KICAgICAgICAvLyBnbHlwaCwgdm9pY2Utb3ZlciBsYWJlbCwgYW5kIER1by1hd2FyZSBzaXppbmcgZm9yIGZyZWUuCiAgICAgICAgbGV0IGNvbXBvc2UgPSBVSUJhckJ1dHRvbkl0ZW0oCiAgICAgICAgICAgIHN5c3RlbUl0ZW06IC5jb21wb3NlLAogICAgICAgICAgICBwcmltYXJ5QWN0aW9uOiBVSUFjdGlvbiB7IFt3ZWFrIHNlbGZdIF8gaW4gc2VsZj8uY29tcG9zZSgpIH0KICAgICAgICApCiAgICAgICAgY29tcG9zZS5hY2Nlc3NpYmlsaXR5SWRlbnRpZmllciA9IFRvb2xiYXJJRC5jb21wb3NlCiAgICAgICAgY29tcG9zZS5hY2Nlc3NpYmlsaXR5TGFiZWwgPSBTdHJpbmcobG9jYWxpemVkOiAiQ29tcG9zZSIpCiAgICAgICAgY29tcG9zZS5zdHlsZSA9IC5wcm9taW5lbnQgICAgICAgICAgLy8gaU9TIDI2KzogdGludGVkLCBlbGV2YXRlZCBnbHlwaAogICAgICAgIHRvb2xiYXJTdG9yZS5jb21wb3NlID0gY29tcG9zZQoKICAgICAgICAvLyBGaWx0ZXIg4oCUIHRvZ2dsZXMgYmV0d2VlbiBvdXRsaW5lIC8gZmlsbGVkIHN5bWJvbC4KICAgICAgICBsZXQgZmlsdGVyID0gVUlCYXJCdXR0b25JdGVtKAogICAgICAgICAgICBpbWFnZTogVUlJbWFnZShzeXN0ZW1OYW1lOiAibGluZS4zLmhvcml6b250YWwuZGVjcmVhc2UuY2lyY2xlIiksCiAgICAgICAgICAgIHByaW1hcnlBY3Rpb246IFVJQWN0aW9uIHsgW3dlYWsgc2VsZl0gXyBpbiBzZWxmPy50b2dnbGVGaWx0ZXIoKSB9CiAgICAgICAgKQogICAgICAgIGZpbHRlci5hY2Nlc3NpYmlsaXR5SWRlbnRpZmllciA9IFRvb2xiYXJJRC5maWx0ZXIKICAgICAgICBmaWx0ZXIuYWNjZXNzaWJpbGl0eUxhYmVsID0gU3RyaW5nKGxvY2FsaXplZDogIkZpbHRlciIpCiAgICAgICAgdG9vbGJhclN0b3JlLmZpbHRlciA9IGZpbHRlcgoKICAgICAgICAvLyBTZWxlY3QgLyBEb25lIOKAlCBzYW1lIGl0ZW0sIHJldGl0bGVkIHdoZW4gZWRpdGluZy4KICAgICAgICBsZXQgc2VsZWN0ID0gVUlCYXJCdXR0b25JdGVtKAogICAgICAgICAgICBpbWFnZTogVUlJbWFnZShzeXN0ZW1OYW1lOiAiY2hlY2ttYXJrLmNpcmNsZSIpLAogICAgICAgICAgICBwcmltYXJ5QWN0aW9uOiBVSUFjdGlvbiB7IFt3ZWFrIHNlbGZdIF8gaW4KICAgICAgICAgICAgICAgIGd1YXJkIGxldCBzZWxmIGVsc2UgeyByZXR1cm4gfQogICAgICAgICAgICAgICAgc2VsZi5zZXRTZWxlY3RpbmcoIXNlbGYuaXNTZWxlY3RpbmcpCiAgICAgICAgICAgIH0KICAgICAgICApCiAgICAgICAgc2VsZWN0LmFjY2Vzc2liaWxpdHlJZGVudGlmaWVyID0gVG9vbGJhcklELnNlbGVjdAogICAgICAgIHNlbGVjdC5hY2Nlc3NpYmlsaXR5TGFiZWwgPSBTdHJpbmcobG9jYWxpemVkOiAiU2VsZWN0IikKICAgICAgICB0b29sYmFyU3RvcmUuc2VsZWN0ID0gc2VsZWN0CgogICAgICAgIC8vIEluYm94IGNvdW50IOKAlCBhIGNvbXBhY3QgcGlsbC4gT24gdmVydGljYWwgYmFycyBhIHdpZGUgdGV4dCBidXR0b24KICAgICAgICAvLyBsaWtlICJJbmJveCAoMTIpIiB3b3VsZCB0cnVuY2F0ZSwgc28gd2Ugc2hvdyBhIHRyYXkgZ2x5cGggd2l0aCBhCiAgICAgICAgLy8gbnVtZXJpYyBiYWRnZSBhbmQgZXhwb3NlIHRoZSBmdWxsIHN0cmluZyB0byBWb2ljZU92ZXIgaW5zdGVhZC4KICAgICAgICBsZXQgaW5ib3ggPSBVSUJhckJ1dHRvbkl0ZW0oCiAgICAgICAgICAgIGltYWdlOiBpbmJveEltYWdlKGNvdW50OiB1bnJlYWRDb3VudCksCiAgICAgICAgICAgIHByaW1hcnlBY3Rpb246IFVJQWN0aW9uIHsgW3dlYWsgc2VsZl0gXyBpbiBzZWxmPy5zaG93SW5ib3goKSB9CiAgICAgICAgKQogICAgICAgIGluYm94LmFjY2Vzc2liaWxpdHlJZGVudGlmaWVyID0gVG9vbGJhcklELmluYm94CiAgICAgICAgdG9vbGJhclN0b3JlLmluYm94ID0gaW5ib3gKCiAgICAgICAgLy8gTW9yZSDigJQgZGVmZXJyZWQgbWVudSBzbyBpdCBhbHdheXMgcmVmbGVjdHMgY3VycmVudCBzdGF0ZSB3aGVuIG9wZW5lZC4KICAgICAgICBsZXQgbW9yZSA9IFVJQmFyQnV0dG9uSXRlbSgKICAgICAgICAgICAgaW1hZ2U6IFVJSW1hZ2Uoc3lzdGVtTmFtZTogImVsbGlwc2lzLmNpcmNsZSIpLAogICAgICAgICAgICBtZW51OiBVSU1lbnUoY2hpbGRyZW46IFsKICAgICAgICAgICAgICAgIFVJRGVmZXJyZWRNZW51RWxlbWVudC51bmNhY2hlZCB7IFt3ZWFrIHNlbGZdIGNvbXBsZXRpb24gaW4KICAgICAgICAgICAgICAgICAgICBjb21wbGV0aW9uKHNlbGY/Lm1ha2VNb3JlTWVudUVsZW1lbnRzKCkgPz8gW10pCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgIF0pCiAgICAgICAgKQogICAgICAgIG1vcmUuYWNjZXNzaWJpbGl0eUlkZW50aWZpZXIgPSBUb29sYmFySUQubW9yZQogICAgICAgIG1vcmUuYWNjZXNzaWJpbGl0eUxhYmVsID0gU3RyaW5nKGxvY2FsaXplZDogIk1vcmUiKQogICAgICAgIHRvb2xiYXJTdG9yZS5tb3JlID0gbW9yZQoKICAgICAgICByZWZyZXNoVG9vbGJhclN0YXRlKCkKICAgIH0KCiAgICBwcml2YXRlIGZ1bmMgbWFrZU1vcmVNZW51RWxlbWVudHMoKSAtPiBbVUlNZW51RWxlbWVudF0gewogICAgICAgIGxldCBhcmNoaXZlVGl0bGUgPSBpc1NlbGVjdGluZwogICAgICAgICAgICA/IFN0cmluZyhsb2NhbGl6ZWQ6ICJBcmNoaXZlIFNlbGVjdGVkIikKICAgICAgICAgICAgOiBTdHJpbmcobG9jYWxpemVkOiAiQXJjaGl2ZSBBbGwiKQoKICAgICAgICBsZXQgYXJjaGl2ZSA9IFVJQWN0aW9uKAogICAgICAgICAgICB0aXRsZTogYXJjaGl2ZVRpdGxlLAogICAgICAgICAgICBpbWFnZTogVUlJbWFnZShzeXN0ZW1OYW1lOiAiYXJjaGl2ZWJveCIpCiAgICAgICAgKSB7IFt3ZWFrIHNlbGZdIF8gaW4gc2VsZj8uYXJjaGl2ZVNlbGVjdGlvbk9yQWxsKCkgfQoKICAgICAgICBsZXQgbWFya1JlYWQgPSBVSUFjdGlvbigKICAgICAgICAgICAgdGl0bGU6IFN0cmluZyhsb2NhbGl6ZWQ6ICJNYXJrIEFsbCBhcyBSZWFkIiksCiAgICAgICAgICAgIGltYWdlOiBVSUltYWdlKHN5c3RlbU5hbWU6ICJlbnZlbG9wZS5vcGVuIiksCiAgICAgICAgICAgIGF0dHJpYnV0ZXM6IHVucmVhZENvdW50ID09IDAgPyBbLmRpc2FibGVkXSA6IFtdCiAgICAgICAgKSB7IFt3ZWFrIHNlbGZdIF8gaW4gc2VsZj8ubWFya0FsbEFzUmVhZCgpIH0KCiAgICAgICAgbGV0IHNldHRpbmdzID0gVUlBY3Rpb24oCiAgICAgICAgICAgIHRpdGxlOiBTdHJpbmcobG9jYWxpemVkOiAiU2V0dGluZ3MiKSwKICAgICAgICAgICAgaW1hZ2U6IFVJSW1hZ2Uoc3lzdGVtTmFtZTogImdlYXIiKQogICAgICAgICkgeyBbd2VhayBzZWxmXSBfIGluIHNlbGY/LnNob3dTZXR0aW5ncygpIH0KCiAgICAgICAgLy8gR3JvdXAgbWVzc2FnZSBhY3Rpb25zIHNlcGFyYXRlbHkgZnJvbSBTZXR0aW5ncy4KICAgICAgICByZXR1cm4gWwogICAgICAgICAgICBVSU1lbnUob3B0aW9uczogLmRpc3BsYXlJbmxpbmUsIGNoaWxkcmVuOiBbYXJjaGl2ZSwgbWFya1JlYWRdKSwKICAgICAgICAgICAgVUlNZW51KG9wdGlvbnM6IC5kaXNwbGF5SW5saW5lLCBjaGlsZHJlbjogW3NldHRpbmdzXSkKICAgICAgICBdCiAgICB9CgogICAgLy8gTUFSSzogTGF5b3V0CgogICAgLy8vIERpc3RyaWJ1dGVzIHRoZSBpdGVtcyBiZXR3ZWVuIHRoZSBuYXZpZ2F0aW9uIGJhciBhbmQgdGhlIGJvdHRvbSBiYXIKICAgIC8vLyBkZXBlbmRpbmcgb24gdGhlIGN1cnJlbnQgdHJhaXRzLgogICAgLy8vCiAgICAvLy8gUmVndWxhciAvIGhvcml6b250YWwgYmFyczoKICAgIC8vLyAgIG5hdiBiYXIgdHJhaWxpbmc6IFtTZWxlY3RdICAgYm90dG9tIGJhcjogW0ZpbHRlcl0gW0luYm94XSDigJQg4oCUIFtNb3JlXSBbQ29tcG9zZV0KICAgIC8vLwogICAgLy8vIENvbXBhY3QgLyB2ZXJ0aWNhbCBiYXJzIChpUGhvbmUgRHVvIHNpZGUgcmFpbCk6CiAgICAvLy8gICBUaGUgYm90dG9tIHRvb2xiYXIgYmVjb21lcyBhIHZlcnRpY2FsIHJhaWwuIE9yZGVyIHRvcOKGkmJvdHRvbSBpcwogICAgLy8vICAgaW1wb3J0YW5jZS1iYXNlZCwgd2l0aCBDb21wb3NlIHBpbm5lZCBhdCB0aGUgcmVhY2hhYmxlIGVuZCBhbmQgbm8KICAgIC8vLyAgIGZsZXhpYmxlIHNwYWNlcnMgdGhhdCB3b3VsZCBwdXNoIGl0ZW1zIHRvIHRoZSBmYXIgY29ybmVycy4KICAgIHByaXZhdGUgZnVuYyBhcHBseVRvb2xiYXJMYXlvdXQoKSB7CiAgICAgICAgZ3VhcmQgbGV0IGNvbXBvc2UgPSB0b29sYmFyU3RvcmUuY29tcG9zZSwKICAgICAgICAgICAgICBsZXQgZmlsdGVyICA9IHRvb2xiYXJTdG9yZS5maWx0ZXIsCiAgICAgICAgICAgICAgbGV0IHNlbGVjdCAgPSB0b29sYmFyU3RvcmUuc2VsZWN0LAogICAgICAgICAgICAgIGxldCBpbmJveCAgID0gdG9vbGJhclN0b3JlLmluYm94LAogICAgICAgICAgICAgIGxldCBtb3JlICAgID0gdG9vbGJhclN0b3JlLm1vcmUgZWxzZSB7IHJldHVybiB9CgogICAgICAgIGxldCB1c2VzVmVydGljYWxCYXJzID0gdHJhaXRDb2xsZWN0aW9uLnVzZXNWZXJ0aWNhbEJhcnMKCiAgICAgICAgLy8gU2VsZWN0IC8gRG9uZSBsaXZlcyBpbiB0aGUgbmF2IGJhciBpbiBib3RoIGxheW91dHM7IGl0J3MgdGhlIG9ubHkKICAgICAgICAvLyBpdGVtIHRoYXQgY2hhbmdlcyBzZW1hbnRpY3Mgd2hpbGUgb24gc2NyZWVuLgogICAgICAgIG5hdmlnYXRpb25JdGVtLnJpZ2h0QmFyQnV0dG9uSXRlbSA9IHNlbGVjdAoKICAgICAgICAvLyBOZXZlciBsZXQgdGhlIHN5c3RlbSBjb2xsYXBzZSBDb21wb3NlIGludG8gYW4gb3ZlcmZsb3cgbWVudS4KICAgICAgICBuYXZpZ2F0aW9uSXRlbS5waW5uZWRUcmFpbGluZ0dyb3VwID0gbmlsCgogICAgICAgIGlmIHVzZXNWZXJ0aWNhbEJhcnMgewogICAgICAgICAgICAvLyBWZXJ0aWNhbCByYWlsOiBrZWVwIGl0ZW1zIHRpZ2h0LCBubyBmbGV4aWJsZSBzcGFjZXMuCiAgICAgICAgICAgIGxldCBnYXAgPSBVSUJhckJ1dHRvbkl0ZW0uZml4ZWRTcGFjZSgxMikKICAgICAgICAgICAgdG9vbGJhckl0ZW1zID0gW2NvbXBvc2UsIGdhcCwgZmlsdGVyLCBnYXAsIGluYm94LCBnYXAsIG1vcmVdCiAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgdG9vbGJhckl0ZW1zID0gWwogICAgICAgICAgICAgICAgZmlsdGVyLAogICAgICAgICAgICAgICAgLmZpeGVkU3BhY2UoMTYpLAogICAgICAgICAgICAgICAgaW5ib3gsCiAgICAgICAgICAgICAgICAuZmxleGlibGVTcGFjZSgpLAogICAgICAgICAgICAgICAgbW9yZSwKICAgICAgICAgICAgICAgIC5maXhlZFNwYWNlKDE2KSwKICAgICAgICAgICAgICAgIGNvbXBvc2UKICAgICAgICAgICAgXQogICAgICAgIH0KCiAgICAgICAgbmF2aWdhdGlvbkNvbnRyb2xsZXI/LnNldFRvb2xiYXJIaWRkZW4oZmFsc2UsIGFuaW1hdGVkOiBmYWxzZSkKICAgIH0KCiAgICAvLyBNQVJLOiBTdGF0ZSB1cGRhdGVzCgogICAgcHJpdmF0ZSBmdW5jIHVwZGF0ZUluYm94Q291bnQoKSB7CiAgICAgICAgZ3VhcmQgbGV0IGluYm94ID0gdG9vbGJhclN0b3JlLmluYm94IGVsc2UgeyByZXR1cm4gfQogICAgICAgIGluYm94LmltYWdlID0gaW5ib3hJbWFnZShjb3VudDogdW5yZWFkQ291bnQpCiAgICAgICAgaW5ib3guYWNjZXNzaWJpbGl0eUxhYmVsID0gU3RyaW5nKAogICAgICAgICAgICBsb2NhbGl6ZWQ6ICJJbmJveCwgXCh1bnJlYWRDb3VudCkgdW5yZWFkIgogICAgICAgICkKICAgICAgICBpbmJveC5hY2Nlc3NpYmlsaXR5VmFsdWUgPSAiXCh1bnJlYWRDb3VudCkiCiAgICB9CgogICAgcHJpdmF0ZSBmdW5jIHVwZGF0ZUZpbHRlclN0YXRlKCkgewogICAgICAgIGd1YXJkIGxldCBmaWx0ZXIgPSB0b29sYmFyU3RvcmUuZmlsdGVyIGVsc2UgeyByZXR1cm4gfQogICAgICAgIGZpbHRlci5pbWFnZSA9IFVJSW1hZ2UoCiAgICAgICAgICAgIHN5c3RlbU5hbWU6IGlzRmlsdGVyQWN0aXZlCiAgICAgICAgICAgICAgICA/ICJsaW5lLjMuaG9yaXpvbnRhbC5kZWNyZWFzZS5jaXJjbGUuZmlsbCIKICAgICAgICAgICAgICAgIDogImxpbmUuMy5ob3Jpem9udGFsLmRlY3JlYXNlLmNpcmNsZSIKICAgICAgICApCiAgICAgICAgZmlsdGVyLmFjY2Vzc2liaWxpdHlWYWx1ZSA9IGlzRmlsdGVyQWN0aXZlCiAgICAgICAgICAgID8gU3RyaW5nKGxvY2FsaXplZDogIk9uIikKICAgICAgICAgICAgOiBTdHJpbmcobG9jYWxpemVkOiAiT2ZmIikKICAgIH0KCiAgICBwcml2YXRlIGZ1bmMgdXBkYXRlU2VsZWN0U3RhdGUoKSB7CiAgICAgICAgZ3VhcmQgbGV0IHNlbGVjdCA9IHRvb2xiYXJTdG9yZS5zZWxlY3QgZWxzZSB7IHJldHVybiB9CiAgICAgICAgaWYgaXNTZWxlY3RpbmcgewogICAgICAgICAgICBzZWxlY3QuaW1hZ2UgPSBuaWwKICAgICAgICAgICAgc2VsZWN0LnRpdGxlID0gU3RyaW5nKGxvY2FsaXplZDogIkRvbmUiKQogICAgICAgICAgICBzZWxlY3Quc3R5bGUgPSAuZG9uZQogICAgICAgICAgICBzZWxlY3QuYWNjZXNzaWJpbGl0eUxhYmVsID0gU3RyaW5nKGxvY2FsaXplZDogIkRvbmUiKQogICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgIHNlbGVjdC50aXRsZSA9IG5pbAogICAgICAgICAgICBzZWxlY3QuaW1hZ2UgPSBVSUltYWdlKHN5c3RlbU5hbWU6ICJjaGVja21hcmsuY2lyY2xlIikKICAgICAgICAgICAgc2VsZWN0LnN0eWxlID0gLnBsYWluCiAgICAgICAgICAgIHNlbGVjdC5hY2Nlc3NpYmlsaXR5TGFiZWwgPSBTdHJpbmcobG9jYWxpemVkOiAiU2VsZWN0IikKICAgICAgICB9CiAgICAgICAgLy8gQ29tcG9zZSBpcyBub3QgbWVhbmluZ2Z1bCB3aGlsZSBzZWxlY3RpbmcuCiAgICAgICAgdG9vbGJhclN0b3JlLmNvbXBvc2U/LmlzRW5hYmxlZCA9ICFpc1NlbGVjdGluZwogICAgfQoKICAgIC8vIE1BUks6IEhlbHBlcnMKCiAgICAvLy8gQSB0cmF5IGdseXBoIHdpdGggYSBudW1lcmljIGJhZGdlLCByZW5kZXJlZCBhcyBhIHNpbmdsZSBzeW1ib2wgaW1hZ2Ugc28KICAgIC8vLyBpdCBiZWhhdmVzIGxpa2UgYW55IG90aGVyIGJhciBpdGVtIG9uIGEgdmVydGljYWwgcmFpbC4KICAgIHByaXZhdGUgZnVuYyBpbmJveEltYWdlKGNvdW50OiBJbnQpIC0+IFVJSW1hZ2U/IHsKICAgICAgICBsZXQgYmFzZSA9IFVJSW1hZ2Uoc3lzdGVtTmFtZTogInRyYXkiKQogICAgICAgIGd1YXJkIGNvdW50ID4gMCBlbHNlIHsgcmV0dXJuIGJhc2UgfQoKICAgICAgICBsZXQgdGV4dCA9IGNvdW50ID4gOTkgPyAiOTkrIiA6ICJcKGNvdW50KSIKICAgICAgICBsZXQgY29uZmlnID0gVUlJbWFnZS5TeW1ib2xDb25maWd1cmF0aW9uKHRleHRTdHlsZTogLmJvZHkpCiAgICAgICAgbGV0IHJlbmRlcmVyID0gVUlHcmFwaGljc0ltYWdlUmVuZGVyZXIoc2l6ZTogQ0dTaXplKHdpZHRoOiAzNCwgaGVpZ2h0OiAyOCkpCiAgICAgICAgcmV0dXJuIHJlbmRlcmVyLmltYWdlIHsgY3R4IGluCiAgICAgICAgICAgIGJhc2U/LndpdGhDb25maWd1cmF0aW9uKGNvbmZpZykKICAgICAgICAgICAgICAgIC53aXRoVGludENvbG9yKC5sYWJlbCwgcmVuZGVyaW5nTW9kZTogLmFsd2F5c09yaWdpbmFsKQogICAgICAgICAgICAgICAgLmRyYXcoaW46IENHUmVjdCh4OiAwLCB5OiA0LCB3aWR0aDogMjQsIGhlaWdodDogMjIpKQoKICAgICAgICAgICAgbGV0IGF0dHJzOiBbTlNBdHRyaWJ1dGVkU3RyaW5nLktleTogQW55XSA9IFsKICAgICAgICAgICAgICAgIC5mb250OiBVSUZvbnQucHJlZmVycmVkRm9udChmb3JUZXh0U3R5bGU6IC5jYXB0aW9uMikud2l0aFNpemUoOSksCiAgICAgICAgICAgICAgICAuZm9yZWdyb3VuZENvbG9yOiBVSUNvbG9yLndoaXRlCiAgICAgICAgICAgIF0KICAgICAgICAgICAgbGV0IHRleHRTaXplID0gKHRleHQgYXMgTlNTdHJpbmcpLnNpemUod2l0aEF0dHJpYnV0ZXM6IGF0dHJzKQogICAgICAgICAgICBsZXQgcGlsbCA9IENHUmVjdCgKICAgICAgICAgICAgICAgIHg6IDM0IC0gbWF4KDE0LCB0ZXh0U2l6ZS53aWR0aCArIDYpLAogICAgICAgICAgICAgICAgeTogMCwKICAgICAgICAgICAgICAgIHdpZHRoOiBtYXgoMTQsIHRleHRTaXplLndpZHRoICsgNiksCiAgICAgICAgICAgICAgICBoZWlnaHQ6IDE0CiAgICAgICAgICAgICkKICAgICAgICAgICAgVUlDb2xvci5zeXN0ZW1SZWQuc2V0RmlsbCgpCiAgICAgICAgICAgIFVJQmV6aWVyUGF0aChyb3VuZGVkUmVjdDogcGlsbCwgY29ybmVyUmFkaXVzOiA3KS5maWxsKCkKICAgICAgICAgICAgKHRleHQgYXMgTlNTdHJpbmcpLmRyYXcoCiAgICAgICAgICAgICAgICBhdDogQ0dQb2ludCgKICAgICAgICAgICAgICAgICAgICB4OiBwaWxsLm1pZFggLSB0ZXh0U2l6ZS53aWR0aCAvIDIsCiAgICAgICAgICAgICAgICAgICAgeTogcGlsbC5taWRZIC0gdGV4dFNpemUuaGVpZ2h0IC8gMgogICAgICAgICAgICAgICAgKSwKICAgICAgICAgICAgICAgIHdpdGhBdHRyaWJ1dGVzOiBhdHRycwogICAgICAgICAgICApCiAgICAgICAgfS53aXRoUmVuZGVyaW5nTW9kZSguYWx3YXlzT3JpZ2luYWwpCiAgICB9Cn0KCi8vIE1BUks6IC0gSXRlbSBzdG9yYWdlCgovLy8gSG9sZHMgc3Ryb25nIHJlZmVyZW5jZXMgdG8gdGhlIGl0ZW1zIHNvIHdlIGNhbiBtdXRhdGUgdGhlbSBhZnRlciBjcmVhdGlvbi4KZmluYWwgY2xhc3MgTWVzc2FnZUxpc3RUb29sYmFyU3RvcmUgewogICAgdmFyIGNvbXBvc2U6IFVJQmFyQnV0dG9uSXRlbT8KICAgIHZhciBmaWx0ZXI6ICBVSUJhckJ1dHRvbkl0ZW0/CiAgICB2YXIgc2VsZWN0OiAgVUlCYXJCdXR0b25JdGVtPwogICAgdmFyIGluYm94OiAgIFVJQmFyQnV0dG9uSXRlbT8KICAgIHZhciBtb3JlOiAgICBVSUJhckJ1dHRvbkl0ZW0/Cn0KCnByaXZhdGUgdmFyIHRvb2xiYXJTdG9yZUtleTogVUludDggPSAwCgpleHRlbnNpb24gTWVzc2FnZUxpc3RWaWV3Q29udHJvbGxlciB7CiAgICB2YXIgdG9vbGJhclN0b3JlOiBNZXNzYWdlTGlzdFRvb2xiYXJTdG9yZSB7CiAgICAgICAgaWYgbGV0IGV4aXN0aW5nID0gb2JqY19nZXRBc3NvY2lhdGVkT2JqZWN0KHNlbGYsICZ0b29sYmFyU3RvcmVLZXkpIGFzPyBNZXNzYWdlTGlzdFRvb2xiYXJTdG9yZSB7CiAgICAgICAgICAgIHJldHVybiBleGlzdGluZwogICAgICAgIH0KICAgICAgICBsZXQgc3RvcmUgPSBNZXNzYWdlTGlzdFRvb2xiYXJTdG9yZSgpCiAgICAgICAgb2JqY19zZXRBc3NvY2lhdGVkT2JqZWN0KHNlbGYsICZ0b29sYmFyU3RvcmVLZXksIHN0b3JlLCAuT0JKQ19BU1NPQ0lBVElPTl9SRVRBSU5fTk9OQVRPTUlDKQogICAgICAgIHJldHVybiBzdG9yZQogICAgfQp9CgovLyBNQVJLOiAtIFRyYWl0IGhlbHBlcnMKCnByaXZhdGUgZXh0ZW5zaW9uIFVJVHJhaXRDb2xsZWN0aW9uIHsKICAgIC8vLyBUcnVlIHdoZW4gdGhlIHN5c3RlbSBsYXlzIHRoZSBuYXYvdG9vbCBiYXJzIG91dCBhcyB2ZXJ0aWNhbCByYWlscwogICAgLy8vIChpUGhvbmUgRHVvIGluIGl0cyBzaWRlLWJ5LXNpZGUgY29uZmlndXJhdGlvbikuIFdlIGFwcHJveGltYXRlIHRoaXMgYnkKICAgIC8vLyAiY29tcGFjdCB3aWR0aCwgcmVndWxhciBoZWlnaHQgd2l0aCBhIHdpZGUtYXNwZWN0IHdpbmRvdyI7IGFkanVzdCBpZiBhCiAgICAvLy8gZGVkaWNhdGVkIHRyYWl0IGlzIGF2YWlsYWJsZSBpbiB5b3VyIFNESy4KICAgIHZhciB1c2VzVmVydGljYWxCYXJzOiBCb29sIHsKICAgICAgICBob3Jpem9udGFsU2l6ZUNsYXNzID09IC5jb21wYWN0ICYmIHZlcnRpY2FsU2l6ZUNsYXNzID09IC5yZWd1bGFyCiAgICAgICAgICAgICYmIHByZWZlcnJlZENvbnRlbnRTaXplQ2F0ZWdvcnkuaXNBY2Nlc3NpYmlsaXR5Q2F0ZWdvcnkgPT0gZmFsc2UKICAgICAgICAgICAgJiYgVUlEZXZpY2UuY3VycmVudC51c2VySW50ZXJmYWNlSWRpb20gPT0gLnBob25lCiAgICAgICAgICAgICYmIChVSVNjcmVlbi5tYWluLmJvdW5kcy53aWR0aCA+IFVJU2NyZWVuLm1haW4uYm91bmRzLmhlaWdodCkKICAgIH0KfQo="}, {"name": "NOTES.md", "type": "text", "content": "# Notes: MessageListViewController+Toolbar.swift\n\n## Choices\n\n- **Compose is a system item (`.compose`) with `.prominent` style** and is placed at the reachable end of the bottom bar. It is never spaced with a flexible spacer on vertical bars so it stays adjacent to the other actions rather than being pushed to a far corner. It is disabled (not hidden) while selecting so the layout doesn't jump.\n- **Every item is an SF Symbol, not text.** Text buttons (\"Inbox (12)\", \"Filter\") are the first thing to truncate or wrap on a narrow vertical rail. Symbols stack cleanly in either orientation.\n- **Inbox count is a badge, not a text button.** The tray symbol gets a small red numeric pill rendered into the image, and the full \"Inbox, 12 unread\" string is exposed via `accessibilityLabel` / `accessibilityValue`. Counts over 99 show \"99+\".\n- **Select \u2194 Done is a single `UIBarButtonItem`** whose image/title/style are swapped by `updateSelectState()`. Keeping one item avoids re-creating the nav bar items and losing its position during the transition.\n- **More menu uses `UIDeferredMenuElement.uncached`** so the archive label (\"Archive All\" vs \"Archive Selected\") and the disabled state of \"Mark All as Read\" are computed at the moment the menu opens. Settings is separated into its own inline group.\n- **Layout is trait-driven.** `registerForTraitChanges` re-runs `applyToolbarLayout()` on size-class or layout-direction changes, so switching iPhone Duo between horizontal and vertical bars re-distributes the items without a view reload.\n- **Vertical vs horizontal detection** is a heuristic in `UITraitCollection.usesVerticalBars`. If the iOS 27.1 SDK exposes a dedicated trait for bar orientation, replace that computed property with it \u2014 it is the only place that needs to change.\n- **Host contract** is expressed as `MessageListToolbarActions` so this extension compiles independently; the real `MessageListViewController` conforms to it. Item references are kept in an associated `MessageListToolbarStore` because extensions cannot add stored properties.\n\n## Integration\n\n```swift\noverride func viewDidLoad() {\n    super.viewDidLoad()\n    configureToolbarItems()\n}\n\n// whenever unread count / filter / selection changes:\nrefreshToolbarState()\n```\n"}], "grading": {"expectations": [{"text": "no custom UIToolbar instantiated", "passed": true, "evidence": ""}, {"text": "items configured via navigationItem groups or pinnedTrailingGroup", "passed": true, "evidence": "navigationItem.pinnedTrailingGroup"}, {"text": "Select/Done item uses axisBehavior = .horizontalOnly", "passed": false, "evidence": "not found"}, {"text": "Inbox count uses badge = .count(\u2026)", "passed": false, "evidence": "not found"}, {"text": "More menu merged into additionalOverflowItems", "passed": false, "evidence": "not found"}, {"text": "Compose has visibilityPriority = .high", "passed": false, "evidence": "not found"}, {"text": "every UIBarButtonItem has both title and image", "passed": true, "evidence": ""}, {"text": "does not put ellipsis on a non-overflow menu", "passed": true, "evidence": ""}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "summary": {"passed": 5, "total": 9, "pass_rate": 0.5555555555555556}}}, {"id": "eval-2-audit-legacy-uikit-project-with_skill-run-1", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "DUO-AUDIT.md", "type": "text", "content": "# iPhone Duo readiness \u2014 evals/fixture\n\n**SDK:** unknown \u2014 no `project.pbxproj` or `Info.plist` in the fixture (2 loose Swift files). Everything Duo-specific (vertical bars, edge-to-edge, `ArrangementView`, reserved regions) requires a rebuild with the **iOS 27.1 SDK / Xcode 27.1**; confirm the host project's deployment target before any of the fixes below will take effect.\n**Stack:** mixed \u2014 UIKit (`Bad.swift`, one `UIViewController`) + SwiftUI (`Grid.swift`, one `View`) \u00b7 2 screens reviewed\n**Scan:** `scripts/duo_audit.sh` reported 15 candidates; all 15 confirmed as real after reading the source. No false positives.\n\n## Summary\n\nBoth screens are built with the non-adaptive patterns that break on iPhone Duo. `Bad.swift` is a textbook legacy UIKit controller: it sizes itself from `UIScreen.main`, branches on device orientation and idiom, assumes symmetric safe-area insets, builds its own `UIToolbar` (so its actions never reach the system vertical bar), and centers a card on `view.center` \u2014 which on the open inner display puts it directly across the hinge. `Grid.swift` locks its `NavigationStack` to a hard-coded 390pt width, nests a `NavigationSplitView` inside an `ArrangementView` (unsupported), and lays out a 3-column grid so the fold lands mid-column. The two things that would most embarrass the app on a Duo are the 390pt-wide SwiftUI screen (wrong size in every pose except closed-portrait, and clipped/letterboxed in Split View) and the `UIToolbar` whose items are invisible to the vertical bar. The good news: the fixes are all small, local, one-line-to-five-line replacements with well-known adaptive APIs, and the SwiftUI screen already uses `.toolbar` inside a `NavigationStack`, which is the right structure.\n\n## Blocking  (content hidden, controls unreachable, crashes)\n\n- **Layout sized from `UIScreen.main`** \u2014 `evals/fixture/Bad.swift:4`\n  What: `let w = UIScreen.main.bounds.width` is used as a layout width.  Why on Duo: with two displays \"the main screen\" is ambiguous and the value does not track open/close, Split View (half width), or pinned PiP; Apple has said `UIScreen.main` will be deprecated. Content laid out to this width overflows or leaves gaps.  Fix: use `view.bounds.width` / `view.safeAreaLayoutGuide.layoutFrame.width`, or `view.window?.windowScene?.screen` if a screen is genuinely required.\n\n- **Fixed 390pt width on a whole navigation screen** \u2014 `evals/fixture/Grid.swift:8`\n  What: `.frame(width: 390)` applied to the `NavigationStack`.  Why on Duo: the outer display is wider than 390pt (content floats with empty margins), the inner display is far wider (huge dead space, hinge lands on content), and Split View / PiP make the window narrower than 390 (content is clipped, trailing toolbar and controls can be pushed off-window).  Fix: remove the modifier; let the stack fill the window and use `@Environment(\\.horizontalSizeClass)` if the layout needs to change.\n\n- **Actions live in a hand-built `UIToolbar`** \u2014 `evals/fixture/Bad.swift:9` (items at `:10-12`)\n  What: `UIToolbar()` created manually and populated with `UIBarButtonItem`s.  Why on Duo: contents of custom bars are not considered for the vertical bar, so the bar stays horizontal, eats vertical space, and its items can sit under the system vertical bar (or, for the left app in Split View, collide with the left-edge bar). The actions are effectively unreachable/duplicated.  Fix: delete the toolbar; host the VC in a `UINavigationController` and set `navigationItem.rightBarButtonItems` / `navigationItem.pinnedTrailingGroup` / `additionalOverflowItems`. Drop the `.flexibleSpace` at `:12` \u2014 spacers collapse to zero in a vertical bar.\n\n- **Card centered on the full view \u2014 straddles the hinge** \u2014 `evals/fixture/Bad.swift:13`\n  What: `card.center = view.center`.  Why on Duo: on the open inner display the view's center is the fold; a card (especially an interactive one) split across the division is the single most visible Duo failure. It also ignores the asymmetric safe area, so it can sit partly under the vertical bar.  Fix: position relative to `view.safeAreaLayoutGuide` and, if it must be manually placed, query `view.reservedRegions(kind: .division)` (with `.includeInactive` to avoid reflow mid-fold) and displace to one side; or migrate the screen to a `UISplitViewController` / SwiftUI `ArrangementView(.overlay)` so the system does it.\n\n- **Orientation-gated layout** \u2014 `evals/fixture/Bad.swift:6`\n  What: `if UIDevice.current.orientation.isLandscape { }` guards layout.  Why on Duo: the inner display does not honour the app's supported orientations, and `UIDevice.orientation` reports the physical device, not the window; combined with the `.portrait` lock at `:15` this branch never runs as intended, so any landscape-specific layout is dead.  Fix: branch on `traitCollection.horizontalSizeClass` / `verticalSizeClass` (register with `registerForTraitChanges`).\n\n- **Idiom-gated layout** \u2014 `evals/fixture/Bad.swift:7`\n  What: `if UIDevice.current.userInterfaceIdiom == .pad { }` selects the \"wide\" layout.  Why on Duo: the open inner display is regular/regular on a `.phone` idiom, so the iPad-style branch never fires and the app shows its phone layout stretched across both halves.  Fix: same as above \u2014 size classes, not idiom.\n\n## Should fix  (works but degraded: wasted space, jumpy layout, wrong overflow)\n\n- **Symmetric safe-area math** \u2014 `evals/fixture/Bad.swift:8`\n  What: `view.bounds.width - view.safeAreaInsets.left * 2`.  Why on Duo: the vertical bar is a *leading or trailing* inset only (right normally, left for the left app in Split View), so left \u2260 right; this either double-subtracts the bar (content too narrow) or ignores it (content under the bar).  Fix: `view.bounds.inset(by: view.safeAreaInsets).width` or `view.safeAreaLayoutGuide.layoutFrame.width`.\n\n- **`UIScreen.main.scale` for scale** \u2014 `evals/fixture/Bad.swift:5`\n  What: display scale read from the main screen.  Why on Duo: ambiguous across two displays; wrong scale makes rasterised images blurry when the app moves between displays.  Fix: `traitCollection.displayScale`.\n\n- **`NavigationSplitView` nested inside `ArrangementView`** \u2014 `evals/fixture/Grid.swift:6`\n  What: `ArrangementView { NavigationSplitView { \u2026 } detail: { \u2026 } } secondary: { \u2026 }` inside a `NavigationStack`.  Why on Duo: navigation containers inside an `ArrangementView` are unsupported \u2014 the arrangement view manages the split/overlay around the fold, and a split view inside it fights it (double columns, collapse logic runs twice, jumpy transitions on open/close).  Fix: pick one. Either `NavigationSplitView { sidebar } detail: { detail }` at the top level (it collapses when closed and avoids the fold when open), or `ArrangementView` with plain content panes and no navigation container inside.\n\n- **Odd (3) grid column count** \u2014 `evals/fixture/Grid.swift:3`\n  What: three `.flexible()` `GridItem`s.  Why on Duo: with an odd column count the fold lands on the middle column, not a gutter.  Fix: prefer an even count (2 or 4), chosen via `reservedRegions(kind: .division, .includeInactive)` / size class so it doesn't reflow mid-fold. (Note: `columns` is declared but not yet used in `body` \u2014 the finding applies once it is.)\n\n- **Symbol-only toolbar items without titles** \u2014 `evals/fixture/Bad.swift:10`, `evals/fixture/Grid.swift:9`\n  What: `UIBarButtonItem(image: \"square\" \u2026)` with no `title`; `ToolbarItem { Image(systemName: \"gear\") }` with no label.  Why on Duo: the vertical bar's overflow/expanded forms display the title; untitled items show as a bare glyph or blank row.  Fix: `UIBarButtonItem(title: \"Select\", image: \u2026)`; SwiftUI `ToolbarItem { Button(\"Settings\", systemImage: \"gear\") { \u2026 } }`.\n\n- **Custom ellipsis menu competes with the system overflow** \u2014 `evals/fixture/Bad.swift:11`\n  What: `UIBarButtonItem(image: \"ellipsis\", menu: nil)`.  Why on Duo: the ellipsis is reserved for the single system overflow menu; on the outer display in landscape the system will add its own, giving two \"\u2026\" buttons.  Fix: move these actions to `navigationItem.additionalOverflowItems`; if a separate menu is needed, give it a distinct symbol and a title.\n\n- **No visibility priority / compression preference** \u2014 `evals/fixture/Bad.swift:9-12`, `evals/fixture/Grid.swift:9`\n  What: no `visibilityPriority` on any item or group, no `verticalBarCompressionBehavior` / `toolbarVerticalCompressionBehavior`.  Why on Duo: on the outer display in landscape items overflow constantly; without priorities the system picks arbitrarily and the primary action can disappear first.  Fix: set priorities on the primary item(s) once the bars come from the system.\n\n- **Portrait orientation lock** \u2014 `evals/fixture/Bad.swift:15`\n  What: `supportedInterfaceOrientations { .portrait }`.  Why on Duo: acceptable for a non-game if intentional, but the inner display ignores it and the app must still resize for every pose; combined with the orientation check at `:6` it's clearly not intentional here, and it blocks tent-pose landscape on the outer display.  Fix: remove the override (or keep it only for a genuinely portrait-only feature) and make the layout size-class driven.\n\n## Nice to have  (polish: sidebar on inner display, hinge effects, laptop-pose layout)\n\n- **Adopt system two-pane containers for `Bad.swift`** \u2014 once the toolbar and centering fixes land, consider wrapping the controller in a `UISplitViewController` so main/detail collapse when closed and avoid the fold when open.\n- **Concentric corners** \u2014 no `UICornerConfiguration` / `ConcentricRectangle` usage in either file; adopt on the card at `Bad.swift:13` so its corners match Duo's screen shape.\n- **Hinge / laptop pose** \u2014 nothing in scope uses `UIHingeInteraction` / `onHingeChange`; not needed, but the card in `Bad.swift` is a candidate for a laptop-pose layout (glanceable content top, controls bottom).\n- **Sections J\u2013K are clean** \u2014 no hinge API misuse and no multi-scene requests.\n\n## Checklist\n\n| Section | Status | Notes |\n|---|---|---|\n| A. Screen references | \u274c | `UIScreen.main.bounds.width` (`Bad.swift:4`), `UIScreen.main.scale` (`Bad.swift:5`) |\n| B. Orientation and idiom | \u274c | `UIDevice.current.orientation.isLandscape` (`Bad.swift:6`), `userInterfaceIdiom == .pad` (`Bad.swift:7`) |\n| C. Fixed metrics | \u274c | `.frame(width: 390)` on the whole screen (`Grid.swift:8`) |\n| D. Safe areas and margins | \u274c | `safeAreaInsets.left * 2` (`Bad.swift:8`); card centered on full view (`Bad.swift:13`); no concentric corners |\n| E. Bars come from the system | \u274c | Hand-built `UIToolbar` with `.flexibleSpace` (`Bad.swift:9,12`); `Grid.swift` correctly uses `.toolbar` in a `NavigationStack` \u2705 |\n| F. Toolbar item content and order | \u274c | Untitled symbol items (`Bad.swift:10`, `Grid.swift:9`); custom ellipsis (`Bad.swift:11`); no priorities/compression |\n| G. Two-pane layouts | \u274c | `NavigationSplitView` inside `ArrangementView` (`Grid.swift:6`); `Bad.swift` has no adaptive container |\n| H. Reserved regions and the fold | \u274c | 3-column grid (`Grid.swift:3`); `view.center` card with no `reservedRegions` query (`Bad.swift:13`) |\n| I. Poses and orientation | \u26a0\ufe0f | `.portrait` lock (`Bad.swift:15`) \u2014 fine only if intentional; no landscape on outer display; no games |\n| J. Hinge | \u2705 | No hinge API usage \u2014 nothing to fix |\n| K. Scenes | \u2705 | No scene requests; Split View correctness depends on fixing C/D |\n| L. Build and test | \u26a0\ufe0f | No project file in fixture \u2014 cannot confirm iOS 27.1 SDK; no evidence of Device Hub testing |\n\n## Test plan\n\nPoses to verify in Device Hub (Xcode 27.1) after the fixes:\n\n| Pose | Screens most likely to fail | What to look for |\n|---|---|---|\n| Closed portrait | `Grid.swift` | 390pt frame vs the wider outer display \u2014 empty side margins |\n| Closed landscape | `Bad.swift` | Toolbar overflow with no priorities; `.portrait` lock blocks the pose entirely |\n| Open portrait | `Bad.swift` | Card across the hinge; phone layout stretched (idiom branch never fires) |\n| Open landscape | `Bad.swift`, `Grid.swift` | Orientation branch dead; split/arrangement double-columns |\n| Book fold | `Bad.swift`, `Grid.swift` | Card and middle grid column under the division; content should displace to trailing region |\n| Split View left | `Bad.swift` | Vertical bar on the *left*; `safeAreaInsets.left * 2` math and left-pinned controls |\n| Split View right | `Grid.swift` | Window narrower than 390 \u2192 clipping; toolbar pushed off-window |\n| PiP pinned | both | Live vertical shrink; anything sized from `UIScreen.main` won't update |\n\nRun Apple's *App Resizability* skill (Xcode 27.1) as a second pass once the SDK is confirmed.\n"}], "grading": {"expectations": [{"text": "flags UIScreen.main (Bad.swift:4/5)", "passed": true, "evidence": "UIScreen.main"}, {"text": "flags orientation check (Bad.swift:6)", "passed": true, "evidence": "orientation"}, {"text": "flags userInterfaceIdiom (Bad.swift:7)", "passed": true, "evidence": "idiom"}, {"text": "flags symmetric safe-area math (Bad.swift:8)", "passed": true, "evidence": "symmetr"}, {"text": "flags custom UIToolbar (Bad.swift:9)", "passed": true, "evidence": "UIToolbar"}, {"text": "flags image-only bar items need a title (Bad.swift:10)", "passed": true, "evidence": "title"}, {"text": "flags ellipsis on custom More menu (Bad.swift:11)", "passed": true, "evidence": "ellipsis"}, {"text": "flags card.center (Bad.swift:13) / fold", "passed": true, "evidence": "center"}, {"text": "flags supportedInterfaceOrientations (Bad.swift:15)", "passed": true, "evidence": "supportedInterfaceOrientations"}, {"text": "flags NavigationSplitView inside ArrangementView (Grid.swift:6)", "passed": true, "evidence": "NavigationStack` to a hard-coded 390pt width, nests a `NavigationSplitView` inside an `ArrangementView"}, {"text": "flags 3-column grid (Grid.swift:3)", "passed": true, "evidence": "3-column"}, {"text": "flags fixed .frame(width: 390) (Grid.swift:8)", "passed": true, "evidence": "390"}, {"text": "recommends reservedRegions or ArrangementView as fix", "passed": true, "evidence": "ArrangementView"}, {"text": "recommends additionalOverflowItems / ToolbarOverflowMenu", "passed": true, "evidence": "additionalOverflowItems"}, {"text": "cites file:line references", "passed": true, "evidence": ".swift:4"}, {"text": "has severity tiers", "passed": true, "evidence": "Blocking"}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "summary": {"passed": 17, "total": 17, "pass_rate": 1.0}}}, {"id": "eval-2-audit-legacy-uikit-project-without_skill-run-1", "prompt": "(No prompt found)", "eval_id": null, "outputs": [{"name": "DUO-AUDIT.md", "type": "text", "content": "# iPhone Duo Readiness Audit\n\n**Scope:** `/Users/saroj/Projects/Personal/OpenSources/iphoneDuoSkills/evals/fixture`\n**Files reviewed:** `Bad.swift` (UIKit, 17 lines), `Grid.swift` (SwiftUI, 12 lines)\n**Date:** 2026-09-12\n\n## Summary\n\nThe project is **not ready** for a dual-display / foldable iPhone. Both files assume a single fixed-size screen with one size class, one orientation, and a static safe area. On a device whose canvas changes when it folds, unfolds, or spans a hinge, the current code will (a) lay out against the wrong screen size, (b) refuse to rotate, (c) center content on top of the hinge, and (d) hard-code a width that ignores the larger unfolded canvas entirely.\n\n| Priority | Count | Theme |\n|---|---|---|\n| P0 \u2013 Blocker | 4 | Fixed-size / fixed-orientation assumptions that break on fold or span |\n| P1 \u2013 High | 5 | Device-class and screen-based queries that give wrong answers on Duo |\n| P2 \u2013 Medium | 4 | Toolbar / navigation / lifecycle hygiene that degrades the experience |\n| P3 \u2013 Low | 2 | Code-quality issues that will make the fixes harder |\n\n---\n\n## P0 \u2013 Blockers\n\n### P0-1. Locked to portrait \u2014 `Bad.swift:15`\n```swift\noverride var supportedInterfaceOrientations: UIInterfaceOrientationMask { .portrait }\n```\nA folding device is routinely held in landscape (book/laptop posture) and can change its effective orientation as it opens. Returning `.portrait` forces the system to letterbox or rotate the content against the hinge. Return `.all` (or `.allButUpsideDown`) and let Auto Layout / size classes drive layout instead of orientation.\n\n### P0-2. Hard-coded `.frame(width: 390)` \u2014 `Grid.swift:8`\n```swift\n.frame(width: 390)\n```\n390 pt is the width of a single-screen iPhone. When the device is unfolded the root view stays 390 pt wide on a canvas that may be ~2x as wide, leaving the second panel empty (or clipping the `NavigationSplitView` sidebar+detail pair into one panel). Remove the fixed width and rely on the container, or use `containerRelativeFrame` / `GeometryReader` if you need proportional sizing.\n\n### P0-3. Layout derived from `UIScreen.main.bounds` \u2014 `Bad.swift:4`\n```swift\nlet w = UIScreen.main.bounds.width\n```\n`UIScreen.main` is deprecated and, on a multi-display device, reports the *screen*, not the *window scene*. A folded/spanned window can occupy any portion of one or both panels, so `w` will be wrong whenever the app is not full-screen on a single panel. Use `view.window?.windowScene?.screen.bounds` at minimum, and preferably size to `view.bounds` / the trait collection instead of the screen at all.\n\n### P0-4. Content centered on the hinge \u2014 `Bad.swift:13`\n```swift\ncard.center = view.center\n```\nWhen the window spans both panels, `view.center` sits exactly on the hinge seam. Any hero card, dialog, or CTA placed there is bisected. Prefer a two-column layout when the horizontal size class is `.regular`, or align content to one panel. (Also see P3-1: `card` is not declared in this file.)\n\n---\n\n## P1 \u2013 High\n\n### P1-1. Orientation used as a layout signal \u2014 `Bad.swift:6`\n```swift\nif UIDevice.current.orientation.isLandscape { }\n```\n`UIDevice.orientation` describes the physical device, not the window, and is unreliable at `viewDidLoad` (often `.unknown`). On Duo the window can be landscape-shaped while the device reports portrait. Branch on `traitCollection.horizontalSizeClass` / `verticalSizeClass` or `view.bounds` aspect, and react in `viewWillTransition(to:with:)` / `traitCollectionDidChange`.\n\n### P1-2. Idiom check used as a layout signal \u2014 `Bad.swift:7`\n```swift\nif UIDevice.current.userInterfaceIdiom == .pad { }\n```\nAn unfolded Duo is still `.phone` idiom but presents an iPad-like regular-width canvas. Any \"iPad-only\" two-column or split behaviour gated on `.pad` will be withheld from the unfolded phone. Gate on size class, not idiom.\n\n### P1-3. Display scale read from `UIScreen.main` \u2014 `Bad.swift:5`\n```swift\nlet scale = UIScreen.main.scale\n```\nSame problem as P0-3: two panels may not share the same scale factor, and the value is fixed at load. Use `traitCollection.displayScale`, which is per-view and updates when the view moves between displays.\n\n### P1-4. Safe-area math assumes symmetric insets \u2014 `Bad.swift:8`\n```swift\nlet width = view.bounds.width - view.safeAreaInsets.left * 2\n```\nThis assumes `left == right`. On a spanned window the hinge introduces an asymmetric inset (or, depending on the OS, no inset at all on the hinge side while the outer edge still has one). Subtract `left + right` individually, and better still use `safeAreaLayoutGuide` / `layoutMarginsGuide` constraints rather than manual arithmetic. Note also that `safeAreaInsets` are not yet valid in `viewDidLoad` \u2014 this value is `0` here regardless of device.\n\n### P1-5. All sizing done once in `viewDidLoad` \u2014 `Bad.swift:3-14`\nEvery value above is computed exactly once. A foldable changes its window size at runtime (fold, unfold, span, un-span). None of this logic re-runs. Move size-dependent work into `viewWillLayoutSubviews`, `viewWillTransition(to:with:)`, or trait-change callbacks, or eliminate it in favour of Auto Layout constraints.\n\n---\n\n## P2 \u2013 Medium\n\n### P2-1. `NavigationStack` wrapping `NavigationSplitView` \u2014 `Grid.swift:5-7`\n```swift\nNavigationStack {\n    ArrangementView { NavigationSplitView { ... } detail: { ... } } secondary: { Text(\"c\") }\n}\n```\nNesting a `NavigationSplitView` inside a `NavigationStack` is unsupported and produces double navigation bars and broken back behaviour. On Duo the split view is exactly the component that should own the two panels; the outer stack prevents it from doing so. Make `NavigationSplitView` (or the `ArrangementView`) the root and put stacks *inside* the columns if needed.\n\n### P2-2. `ArrangementView` primary/secondary content is not designed for the seam \u2014 `Grid.swift:6`\nThe primary pane is a full split view and the secondary is a single `Text(\"c\")`. If `ArrangementView` maps primary/secondary to the two panels, the primary panel will try to show sidebar+detail in half the canvas while the secondary panel shows one word. Decide what belongs on each panel (e.g. sidebar on primary, detail on secondary) rather than nesting a split inside one side.\n\n### P2-3. Toolbar items with no actions, no labels \u2014 `Bad.swift:10-12`, `Grid.swift:9`\n```swift\nUIBarButtonItem(image: UIImage(systemName: \"square\"), style: .plain, target: nil, action: nil)\nUIBarButtonItem(image: UIImage(systemName: \"ellipsis\"), menu: nil)\nToolbarItem { Image(systemName: \"gear\") }\n```\nNone of these have a `target`/`action`, `menu`, or accessibility label, and the SwiftUI one is a bare `Image` rather than a `Button`. On a wider unfolded canvas toolbars gain room; the system can promote items to labelled buttons only if they are proper actions. Give each item an action (or `menu`) and an `accessibilityLabel`. The `UIToolbar()` at `Bad.swift:9` is also never added to the hierarchy.\n\n### P2-4. `columns` declared but never used \u2014 `Grid.swift:3`\n```swift\nlet columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]\n```\nPresumably intended for a `LazyVGrid`. If it is wired up later, a fixed 3-column grid will produce very wide cells when unfolded and cramped cells when folded. Prefer `GridItem(.adaptive(minimum:))` so the column count follows the available width.\n\n---\n\n## P3 \u2013 Low\n\n### P3-1. Undefined identifier `card` \u2014 `Bad.swift:13`\n`card` is referenced but never declared; the file does not compile as written. Fix before any of the layout changes above can be verified.\n\n### P3-2. `super.viewDidLoad()` never called \u2014 `Bad.swift:3`\nStandard lifecycle hygiene; omission will bite once trait-change handling is added.\n\n---\n\n## Recommended order of work\n\n1. **Unlock orientation** (P0-1) and **remove the fixed width** (P0-2) \u2014 one-line changes with the biggest payoff.\n2. **Replace `UIScreen.main` / `UIDevice` queries** (P0-3, P1-1, P1-2, P1-3) with trait-collection and view-bounds based logic.\n3. **Move sizing out of `viewDidLoad`** (P1-5) and fix the safe-area arithmetic (P1-4).\n4. **Re-architect the SwiftUI root** (P2-1, P2-2) so `NavigationSplitView` / `ArrangementView` is the top-level container.\n5. **Fix hinge-centred content** (P0-4) once the layout is size-class driven.\n6. Clean up toolbar items and the unused grid (P2-3, P2-4), then compile fixes (P3-1, P3-2).\n\n## Verification checklist\n\n- Run on a Duo simulator in folded, unfolded-portrait, unfolded-landscape and spanned states; confirm no content sits on the seam.\n- Rotate in every posture; confirm the VC rotates and re-lays out.\n- Toggle fold at runtime; confirm sizes recompute (no stale 390 pt or `UIScreen` values).\n- Enable Dynamic Type at the largest accessibility size on the folded panel to confirm the toolbar collapses gracefully.\n"}], "grading": {"expectations": [{"text": "flags UIScreen.main (Bad.swift:4/5)", "passed": true, "evidence": "UIScreen.main"}, {"text": "flags orientation check (Bad.swift:6)", "passed": true, "evidence": "orientation"}, {"text": "flags userInterfaceIdiom (Bad.swift:7)", "passed": true, "evidence": "userInterfaceIdiom"}, {"text": "flags symmetric safe-area math (Bad.swift:8)", "passed": true, "evidence": "symmetr"}, {"text": "flags custom UIToolbar (Bad.swift:9)", "passed": true, "evidence": "UIToolbar"}, {"text": "flags image-only bar items need a title (Bad.swift:10)", "passed": false, "evidence": "not found"}, {"text": "flags ellipsis on custom More menu (Bad.swift:11)", "passed": true, "evidence": "ellipsis"}, {"text": "flags card.center (Bad.swift:13) / fold", "passed": true, "evidence": "center"}, {"text": "flags supportedInterfaceOrientations (Bad.swift:15)", "passed": true, "evidence": "supportedInterfaceOrientations"}, {"text": "flags NavigationSplitView inside ArrangementView (Grid.swift:6)", "passed": true, "evidence": "NavigationStack` wrapping `NavigationSplitView` \u2014 `Grid.swift:5-7`\n```swift\nNavigationStack {\n    ArrangementView"}, {"text": "flags 3-column grid (Grid.swift:3)", "passed": true, "evidence": "3-column"}, {"text": "flags fixed .frame(width: 390) (Grid.swift:8)", "passed": true, "evidence": "390"}, {"text": "recommends reservedRegions or ArrangementView as fix", "passed": true, "evidence": "ArrangementView"}, {"text": "recommends additionalOverflowItems / ToolbarOverflowMenu", "passed": false, "evidence": "not found"}, {"text": "cites file:line references", "passed": true, "evidence": ".swift:15"}, {"text": "has severity tiers", "passed": true, "evidence": "High"}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "summary": {"passed": 15, "total": 17, "pass_rate": 0.8823529411764706}}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "iphone-duo", "skill_path": "<path/to/skill>", "executor_model": "<model-name>", "analyzer_model": "<model-name>", "timestamp": "2026-09-12T13:53:57Z", "evals_run": [0, 1, 2], "runs_per_configuration": 3}, "runs": [{"eval_id": 0, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 7, "failed": 0, "total": 7, "time_seconds": 65.6, "tokens": 88201, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "uses ArrangementView with primary/secondary closure", "passed": true, "evidence": "ArrangementView {\n                PlayerView()          // primary: never hidden\n            } secondary: {"}, {"text": "sets .arrangementViewStyle(.split\u2026)", "passed": true, "evidence": ".arrangementViewStyle(.split"}, {"text": "arrangement is inside NavigationStack (not the reverse)", "passed": true, "evidence": "NavigationStack {\n            Group {\n                if isCompact {\n                    compactContent\n                "}, {"text": "no navigation container inside ArrangementView", "passed": true, "evidence": ""}, {"text": "no HStack used for the two panes", "passed": true, "evidence": ""}, {"text": "does not use UIScreen.main or orientation checks", "passed": true, "evidence": ""}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "notes": []}, {"eval_id": 1, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 9, "failed": 0, "total": 9, "time_seconds": 116.8, "tokens": 90565, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "no custom UIToolbar instantiated", "passed": true, "evidence": ""}, {"text": "items configured via navigationItem groups or pinnedTrailingGroup", "passed": true, "evidence": "navigationItem.pinnedTrailingGroup"}, {"text": "Select/Done item uses axisBehavior = .horizontalOnly", "passed": true, "evidence": "axisBehavior = .horizontalOnly"}, {"text": "Inbox count uses badge = .count(\u2026)", "passed": true, "evidence": ".badge = inboxUnreadCount > 0 ? .count("}, {"text": "More menu merged into additionalOverflowItems", "passed": true, "evidence": "additionalOverflowItems ="}, {"text": "Compose has visibilityPriority = .high", "passed": true, "evidence": "visibilityPriority = .high"}, {"text": "every UIBarButtonItem has both title and image", "passed": true, "evidence": ""}, {"text": "does not put ellipsis on a non-overflow menu", "passed": true, "evidence": ""}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "notes": []}, {"eval_id": 2, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 17, "failed": 0, "total": 17, "time_seconds": 85.4, "tokens": 90952, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "flags UIScreen.main (Bad.swift:4/5)", "passed": true, "evidence": "UIScreen.main"}, {"text": "flags orientation check (Bad.swift:6)", "passed": true, "evidence": "orientation"}, {"text": "flags userInterfaceIdiom (Bad.swift:7)", "passed": true, "evidence": "idiom"}, {"text": "flags symmetric safe-area math (Bad.swift:8)", "passed": true, "evidence": "symmetr"}, {"text": "flags custom UIToolbar (Bad.swift:9)", "passed": true, "evidence": "UIToolbar"}, {"text": "flags image-only bar items need a title (Bad.swift:10)", "passed": true, "evidence": "title"}, {"text": "flags ellipsis on custom More menu (Bad.swift:11)", "passed": true, "evidence": "ellipsis"}, {"text": "flags card.center (Bad.swift:13) / fold", "passed": true, "evidence": "center"}, {"text": "flags supportedInterfaceOrientations (Bad.swift:15)", "passed": true, "evidence": "supportedInterfaceOrientations"}, {"text": "flags NavigationSplitView inside ArrangementView (Grid.swift:6)", "passed": true, "evidence": "NavigationStack` to a hard-coded 390pt width, nests a `NavigationSplitView` inside an `ArrangementView"}, {"text": "flags 3-column grid (Grid.swift:3)", "passed": true, "evidence": "3-column"}, {"text": "flags fixed .frame(width: 390) (Grid.swift:8)", "passed": true, "evidence": "390"}, {"text": "recommends reservedRegions or ArrangementView as fix", "passed": true, "evidence": "ArrangementView"}, {"text": "recommends additionalOverflowItems / ToolbarOverflowMenu", "passed": true, "evidence": "additionalOverflowItems"}, {"text": "cites file:line references", "passed": true, "evidence": ".swift:4"}, {"text": "has severity tiers", "passed": true, "evidence": "Blocking"}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "notes": []}, {"eval_id": 0, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.5714285714285714, "passed": 4, "failed": 0, "total": 7, "time_seconds": 55.0, "tokens": 78413, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "uses ArrangementView with primary/secondary closure", "passed": false, "evidence": "not found"}, {"text": "sets .arrangementViewStyle(.split\u2026)", "passed": false, "evidence": "not found"}, {"text": "arrangement is inside NavigationStack (not the reverse)", "passed": false, "evidence": "not found"}, {"text": "no navigation container inside ArrangementView", "passed": true, "evidence": ""}, {"text": "no HStack used for the two panes", "passed": true, "evidence": ""}, {"text": "does not use UIScreen.main or orientation checks", "passed": true, "evidence": ""}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "notes": []}, {"eval_id": 1, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.5555555555555556, "passed": 5, "failed": 0, "total": 9, "time_seconds": 81.0, "tokens": 80913, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "no custom UIToolbar instantiated", "passed": true, "evidence": ""}, {"text": "items configured via navigationItem groups or pinnedTrailingGroup", "passed": true, "evidence": "navigationItem.pinnedTrailingGroup"}, {"text": "Select/Done item uses axisBehavior = .horizontalOnly", "passed": false, "evidence": "not found"}, {"text": "Inbox count uses badge = .count(\u2026)", "passed": false, "evidence": "not found"}, {"text": "More menu merged into additionalOverflowItems", "passed": false, "evidence": "not found"}, {"text": "Compose has visibilityPriority = .high", "passed": false, "evidence": "not found"}, {"text": "every UIBarButtonItem has both title and image", "passed": true, "evidence": ""}, {"text": "does not put ellipsis on a non-overflow menu", "passed": true, "evidence": ""}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "notes": []}, {"eval_id": 2, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.8823529411764706, "passed": 15, "failed": 0, "total": 17, "time_seconds": 67.5, "tokens": 79841, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "flags UIScreen.main (Bad.swift:4/5)", "passed": true, "evidence": "UIScreen.main"}, {"text": "flags orientation check (Bad.swift:6)", "passed": true, "evidence": "orientation"}, {"text": "flags userInterfaceIdiom (Bad.swift:7)", "passed": true, "evidence": "userInterfaceIdiom"}, {"text": "flags symmetric safe-area math (Bad.swift:8)", "passed": true, "evidence": "symmetr"}, {"text": "flags custom UIToolbar (Bad.swift:9)", "passed": true, "evidence": "UIToolbar"}, {"text": "flags image-only bar items need a title (Bad.swift:10)", "passed": false, "evidence": "not found"}, {"text": "flags ellipsis on custom More menu (Bad.swift:11)", "passed": true, "evidence": "ellipsis"}, {"text": "flags card.center (Bad.swift:13) / fold", "passed": true, "evidence": "center"}, {"text": "flags supportedInterfaceOrientations (Bad.swift:15)", "passed": true, "evidence": "supportedInterfaceOrientations"}, {"text": "flags NavigationSplitView inside ArrangementView (Grid.swift:6)", "passed": true, "evidence": "NavigationStack` wrapping `NavigationSplitView` \u2014 `Grid.swift:5-7`\n```swift\nNavigationStack {\n    ArrangementView"}, {"text": "flags 3-column grid (Grid.swift:3)", "passed": true, "evidence": "3-column"}, {"text": "flags fixed .frame(width: 390) (Grid.swift:8)", "passed": true, "evidence": "390"}, {"text": "recommends reservedRegions or ArrangementView as fix", "passed": true, "evidence": "ArrangementView"}, {"text": "recommends additionalOverflowItems / ToolbarOverflowMenu", "passed": false, "evidence": "not found"}, {"text": "cites file:line references", "passed": true, "evidence": ".swift:15"}, {"text": "has severity tiers", "passed": true, "evidence": "High"}, {"text": "no invented / unverified API names", "passed": true, "evidence": "none found"}], "notes": []}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 89.2667, "stddev": 25.8181, "min": 65.6, "max": 116.8}, "tokens": {"mean": 89906.0, "stddev": 1489.1981, "min": 88201, "max": 90952}}, "without_skill": {"pass_rate": {"mean": 0.6698, "stddev": 0.1843, "min": 0.5556, "max": 0.8824}, "time_seconds": {"mean": 67.8333, "stddev": 13.0032, "min": 55.0, "max": 81.0}, "tokens": {"mean": 79722.3333, "stddev": 1254.2174, "min": 78413, "max": 80913}}, "delta": {"pass_rate": "+0.33", "time_seconds": "+21.4", "tokens": "+10184"}}, "notes": []}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>
