@@ -27,7 +27,7 @@ These catch the mechanical mistakes; the guidelines cover the rest.
 UIScreen\.main | interfaceOrientation | UIDevice\.current\.orientation | userInterfaceIdiom ==
 \.frame\(width: [0-9]{3} | safeAreaInsets\.(left|right) \* 2 | UIToolbar\( | UIBarButtonItem\(image:
 "ellipsis" | ArrangementView \{[^}]*Navigation | GridItem.*count: [357]\b
-Dimensions\.get\( | Platform\.isPad | paddingHorizontal: insets\. | @react-navigation/bottom-tabs | @react-navigation/stack\b
+Dimensions\.get\( | Platform\.isPad | paddingHorizontal: insets\. | createBottomTabNavigator | @react-navigation/stack\b
 ```
 
 ## Not covered

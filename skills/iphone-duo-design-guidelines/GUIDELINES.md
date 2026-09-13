@@ -27,7 +27,7 @@ iPhone Duo doesn't need a new kind of layout. It needs the same resizable layout
 | No fixed widths or breakpoints tied to a device | no `.frame(width: 390)` | no `width: 390`, no `SCREEN_W` constants |
 | Read each safe-area side separately | `bounds.inset(by: safeAreaInsets)` | `insets.left`, `insets.right` (not `paddingHorizontal: insets.left`) |
 | Foreground inside the safe area, background may extend past it | SwiftUI default / `.ignoresSafeArea()` for art | `SafeAreaView` + `edges` / full-bleed image behind it |
-| Let system containers do the work | `NavigationSplitView`, `TabView`, sheets, alerts | `native-stack`, native tabs, `Modal pageSheet`, `Alert` |
+| Let system containers do the work | `NavigationSplitView`, `TabView`, sheets, alerts | `native-stack`, `createNativeBottomTabNavigator` / Expo `NativeTabs`, `Modal pageSheet`, `Alert` |
 | Test at half width and in landscape before shipping | Split View, iPhone Mirroring | same |
 
 Everything below is what Duo adds on top.
@@ -92,7 +92,7 @@ Everything below is what Duo adds on top.
 ![Vertical strip anatomy](assets/tab-bar-toolbar-layout.png)
 
 - **Only system-managed bars move to the strip.** Swift: `.toolbar {}` inside `NavigationStack` / `NavigationSplitView` / `TabView`; UIKit `navigationItem` groups under `UINavigationController` / `UITabBarController`. Hand-built `UIToolbar` / `UINavigationBar` / `UITabBar` content is **not considered**.
-  RN: `@react-navigation/native-stack` headers are native → participate. **`@react-navigation/bottom-tabs` is JS-drawn → stays at the bottom.** Use native tabs (Expo Router `NativeTabs`, or `react-native-bottom-tabs`) to get a `UITabBarController`. JS-drawn headers (`@react-navigation/stack`) won't move.
+  RN: `@react-navigation/native-stack` headers are native → participate. **JS-drawn tabs (`createBottomTabNavigator`) stay at the bottom.** Use native tabs to get a real `UITabBarController`: React Navigation's `createNativeBottomTabNavigator` (from `@react-navigation/bottom-tabs/unstable` in v7; the default in v8), Expo Router `NativeTabs`, or `react-native-bottom-tabs`. JS-drawn headers (`@react-navigation/stack`) won't move.
 - **Order, top to bottom:** Back/Close → prominent action (Done, Save) → grouped toolbar items → tab bar. Swift: `ToolbarItem(placement: .cancellationAction)`, then `.topBarPinnedTrailing` / UIKit `navigationItem.pinnedTrailingGroup`. RN native-stack: the back button is automatic; `headerRight` maps to the trailing group.
 - **Symbols go vertical; text stays horizontal.** The strip has fixed width, flexible height. Give every symbol item a **title too** (used in overflow/expanded forms): `Label("Share", systemImage:)` / `UIBarButtonItem(title:image:…)`. RN native-stack `headerRight` renders a custom view → treated as custom (stays horizontal); prefer symbol-only content and keep it narrow.
 - Minimize text-only items. Counts become **badges**: `.badge(7)` / `item.badge = .count(7)`. Text that carries information ("$42") stays horizontal; text that only reinforces a symbol goes.
